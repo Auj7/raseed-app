@@ -474,6 +474,14 @@ table.rtable{width:100%; border-collapse:collapse;}
           <button class="btn solid small" id="attAddRamadanBtn">+ Add period</button>
         </div>
       </div>
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Assigned By <span style="text-transform:none; font-weight:500; font-size:11px;">(pick from this list when logging tasks, instead of typing every time)</span></h3>
+        <div id="attAssignedByList"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; align-items:end;">
+          <div class="field" style="margin:0; flex:1;"><label>Name</label><input type="text" id="attNewAssignedBy" placeholder="e.g. Khalid Al Ahbabi"></div>
+          <button class="btn solid small" id="attAddAssignedByBtn">+ Add name</button>
+        </div>
+      </div>
     </section>
   </div>
   <!-- ===== end attendanceApp ===== -->
@@ -498,6 +506,7 @@ table.rtable{width:100%; border-collapse:collapse;}
     <div class="field" id="attSessionsField">
       <label>Sessions (check-in / check-out) — you can log attendance on any day, including weekends and holidays. Each session can have more than one task.</label>
       <div id="attSessionsList"></div>
+      <datalist id="attTaskSuggestions"></datalist>
       <button class="btn small" id="attAddSessionBtn" style="margin-top:8px;">+ Add session</button>
     </div>
     <div class="field"><label>Note (optional)</label><input type="text" id="attNote" placeholder="e.g. reason for leave"></div>
@@ -582,7 +591,7 @@ table.rtable{width:100%; border-collapse:collapse;}
     <div class="field"><label>Account</label><select id="entryAccountSelect"></select></div>
     <div class="field"><label>Category</label><select id="entryCategorySelect"></select></div>
     <div class="field"><label>Date</label><input type="date" id="entryDate"></div>
-    <div class="field"><label>Note (optional)</label><input type="text" id="entryNote" placeholder="Note"></div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="entryNote" placeholder="Note" list="txNoteSuggestions"><datalist id="txNoteSuggestions"></datalist></div>
     <div class="keypad" id="entryKeypad">
       <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button>
       <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button>
@@ -607,7 +616,7 @@ table.rtable{width:100%; border-collapse:collapse;}
       <div class="hint" id="transferRateHint">—</div>
     </div>
     <div class="field"><label>Date</label><input type="date" id="transferDate"></div>
-    <div class="field"><label>Note (optional)</label><input type="text" id="transferNote" placeholder="Note"></div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="transferNote" placeholder="Note" list="transferNoteSuggestions"><datalist id="transferNoteSuggestions"></datalist></div>
     <div class="keypad" id="transferKeypad">
       <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button>
       <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button>
@@ -707,7 +716,8 @@ let transfers = saved ? (saved.transfers||[]) : [];
 let fxRates = saved ? (saved.fxRates||{}) : { USD:3.6725, SAR:0.9793 };
 let attDays = saved ? (saved.attDays||[]) : [];
 let attSettings = saved ? (saved.attSettings||null) : null;
-if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-06-19', ramadanPeriods:[{start:'2026-02-18', end:'2026-03-19'}] };
+if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-06-19', ramadanPeriods:[{start:'2026-02-18', end:'2026-03-19'}], assignedByList:[] };
+if(!attSettings.assignedByList) attSettings.assignedByList = [];
 if(!saved) saveLocal();
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -1023,7 +1033,7 @@ function renderAttAll(){
   if(attCurrentTab==='overview') renderAttOverview();
   else if(attCurrentTab==='log') renderAttLog();
   else if(attCurrentTab==='leaves') renderAttLeaves();
-  else if(attCurrentTab==='settings') renderRamadanList();
+  else if(attCurrentTab==='settings'){ renderRamadanList(); renderAssignedByList(); }
 }
 
 /* ---------------- attendance: overview (sweeps the full calendar from the start date) ---------------- */
@@ -1190,6 +1200,7 @@ function openEditAttDay(existing){
   document.getElementById('attSessionsField').style.display='block';
   attSessionsDraft = existing ? JSON.parse(JSON.stringify(existing.sessions)) : [{checkIn:'09:00', checkOut:'17:00', workType:'Online', tasks:[{task:'',assignedBy:''}]}];
   document.getElementById('attDeleteDayBtn').style.display = existing ? 'inline-flex':'none';
+  populateTextSuggestions('attTaskSuggestions', attDays.flatMap(d=>d.sessions.flatMap(s=>(s.tasks||[]).map(t=>t.task))));
   renderAttSessionsDraft();
   updateAttExpectedHint();
   openModal('editAttDayModal');
@@ -1226,9 +1237,17 @@ function renderAttSessionsDraft(){
     const tasksBox = document.createElement('div'); tasksBox.id='attTasksBox'+i;
     s.tasks.forEach((tk,ti)=>{
       const trow = document.createElement('div'); trow.className='att-session-row'; trow.style.gridTemplateColumns='1.6fr 1.2fr auto'; trow.style.marginBottom='6px';
+      const knownNames = attSettings.assignedByList||[];
+      const extraCurrent = (tk.assignedBy && !knownNames.includes(tk.assignedBy)) ? `<option value="${tk.assignedBy}" selected>${tk.assignedBy} (not in list)</option>` : '';
+      const abOptions = knownNames.map(n=>`<option value="${n}" ${tk.assignedBy===n?'selected':''}>${n}</option>`).join('');
       trow.innerHTML = `
-        <div><label>Task</label><input type="text" value="${tk.task||''}" data-tf="task" data-si="${i}" data-ti="${ti}" placeholder="What did you work on?"></div>
-        <div><label>Assigned by</label><input type="text" value="${tk.assignedBy||''}" data-tf="assignedBy" data-si="${i}" data-ti="${ti}"></div>
+        <div><label>Task</label><input type="text" value="${tk.task||''}" data-tf="task" data-si="${i}" data-ti="${ti}" placeholder="What did you work on?" list="attTaskSuggestions"></div>
+        <div><label>Assigned by</label><select data-tf="assignedBy" data-si="${i}" data-ti="${ti}">
+          <option value="">— none —</option>
+          ${extraCurrent}
+          ${abOptions}
+          <option value="__new__">+ Add new name…</option>
+        </select></div>
         <span class="rm" data-rmt="${i}:${ti}">✕</span>`;
       tasksBox.appendChild(trow);
     });
@@ -1241,8 +1260,25 @@ function renderAttSessionsDraft(){
   el.querySelectorAll('[data-sf]').forEach(inp=>{
     inp.addEventListener('input', ()=>{ attSessionsDraft[parseInt(inp.dataset.si)][inp.dataset.sf]=inp.value; updateAttLivePreview(); });
   });
-  el.querySelectorAll('[data-tf]').forEach(inp=>{
+  el.querySelectorAll('input[data-tf]').forEach(inp=>{
     inp.addEventListener('input', ()=>{ attSessionsDraft[parseInt(inp.dataset.si)].tasks[parseInt(inp.dataset.ti)][inp.dataset.tf]=inp.value; });
+  });
+  el.querySelectorAll('select[data-tf="assignedBy"]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const si=parseInt(sel.dataset.si), ti=parseInt(sel.dataset.ti);
+      if(sel.value==='__new__'){
+        const name = prompt('Add a new name to the Assigned By list:');
+        if(name && name.trim()){
+          addAssignedByName(name);
+          attSessionsDraft[si].tasks[ti].assignedBy = name.trim();
+        } else {
+          attSessionsDraft[si].tasks[ti].assignedBy = '';
+        }
+        renderAttSessionsDraft();
+      } else {
+        attSessionsDraft[si].tasks[ti].assignedBy = sel.value;
+      }
+    });
   });
   el.querySelectorAll('[data-rms]').forEach(b=>{
     b.addEventListener('click', ()=>{ attSessionsDraft.splice(parseInt(b.dataset.rms),1); renderAttSessionsDraft(); updateAttLivePreview(); });
@@ -1320,6 +1356,39 @@ document.getElementById('attAddRamadanBtn').addEventListener('click', ()=>{
   attSettings.ramadanPeriods.sort((a,b)=>a.start.localeCompare(b.start));
   document.getElementById('attRamNewStart').value=''; document.getElementById('attRamNewEnd').value='';
   persist(); renderRamadanList(); showToast('Ramadan period added');
+});
+
+/* Assigned By — a managed list, picked from a dropdown when logging tasks instead of retyping */
+function renderAssignedByList(){
+  const el = document.getElementById('attAssignedByList');
+  const names = attSettings.assignedByList || [];
+  if(!names.length){ el.innerHTML='<div class="empty-hint">No names added yet</div>'; return; }
+  el.innerHTML='';
+  names.forEach((n,i)=>{
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML=`<div class="list-icon">👤</div><div class="ltxt"><div class="ln1">${n}</div></div><div class="lval" data-rmab="${i}" style="color:var(--expense-soft); cursor:pointer;">✕</div>`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('[data-rmab]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      attSettings.assignedByList.splice(parseInt(b.dataset.rmab),1);
+      persist(); renderAssignedByList();
+    });
+  });
+}
+function addAssignedByName(name){
+  name = (name||'').trim();
+  if(!name) return false;
+  if(!attSettings.assignedByList) attSettings.assignedByList=[];
+  if(attSettings.assignedByList.includes(name)){ showToast('Already in the list'); return false; }
+  attSettings.assignedByList.push(name);
+  attSettings.assignedByList.sort((a,b)=>a.localeCompare(b));
+  persist();
+  return true;
+}
+document.getElementById('attAddAssignedByBtn').addEventListener('click', ()=>{
+  const inp = document.getElementById('attNewAssignedBy');
+  if(addAssignedByName(inp.value)){ inp.value=''; renderAssignedByList(); showToast('Name added'); }
 });
 
 /* ---------------- tabs ---------------- */
@@ -1646,6 +1715,13 @@ function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',(e)=>{ if(e.target===ov) ov.classList.remove('open'); }); });
 
+/* fills a <datalist> with unique, non-empty previous values so the browser suggests them as you type */
+function populateTextSuggestions(datalistId, values){
+  const el = document.getElementById(datalistId);
+  const unique = [...new Set(values.map(v=>(v||'').trim()).filter(Boolean))].sort();
+  el.innerHTML = unique.map(v=>`<option value="${v.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
 function buildIconGrid(gridEl, icons, current, onPick){
   gridEl.innerHTML='';
   icons.forEach(ic=>{
@@ -1722,6 +1798,7 @@ function openEntry(mode, existingTx){
   document.getElementById('entryAmtBox').className='calc-amt-box '+mode;
   document.getElementById('entryAmt').textContent=entryAmountStr;
   document.getElementById('entryNote').value = existingTx ? (existingTx.note||'') : '';
+  populateTextSuggestions('txNoteSuggestions', tx.map(t=>t.note));
   document.getElementById('entryDate').value = existingTx ? existingTx.date : todayKey();
   populateAccountSelect(document.getElementById('entryAccountSelect'));
   if(existingTx) document.getElementById('entryAccountSelect').value = existingTx.accountId;
@@ -1771,6 +1848,7 @@ function openTransferEntry(existing){
   document.getElementById('transferTitle').textContent = existing ? 'Edit transfer' : 'Transfer between accounts';
   document.getElementById('transferAmt').textContent = transferAmountStr;
   document.getElementById('transferNote').value = existing ? (existing.note||'') : '';
+  populateTextSuggestions('transferNoteSuggestions', transfers.map(t=>t.note));
   document.getElementById('transferDate').value = existing ? existing.date : todayKey();
   populateAccountSelect(document.getElementById('transferFrom')); populateAccountSelect(document.getElementById('transferTo'));
   if(existing){ document.getElementById('transferFrom').value=existing.accountId; document.getElementById('transferTo').value=existing.toAccountId; document.getElementById('transferRate').value=existing.rate||1; }
@@ -1890,7 +1968,7 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ratesRows), 'Rates');
   const attRows = attDays.map(d=>({id:d.id, date:d.date, dayType:d.dayType, sessionsJson:JSON.stringify(d.sessions)}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attRows), 'AttendanceDays');
-  const settingsRows = Object.entries(attSettings).map(([key,value])=>({key, value: (key==='ramadanPeriods') ? JSON.stringify(value) : value}));
+  const settingsRows = Object.entries(attSettings).map(([key,value])=>({key, value: (key==='ramadanPeriods'||key==='assignedByList') ? JSON.stringify(value) : value}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(settingsRows), 'AttendanceSettings');
   return wb;
 }
@@ -1907,7 +1985,9 @@ function stateFromWorkbook(wb){
   attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
   if(wb.Sheets['AttendanceSettings']){
     const s = {}; XLSX.utils.sheet_to_json(wb.Sheets['AttendanceSettings']).forEach(r=>{ s[r.key]=r.value; });
-    attSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'', ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })() };
+    attSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'',
+      ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })(),
+      assignedByList: (()=>{ try{ return JSON.parse(s.assignedByList||'[]'); }catch(e){ return []; } })() };
   }
 }
 async function writeToLinkedFile(){
@@ -2028,7 +2108,7 @@ function gsRowsFromState(){
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
     Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])],
     AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,JSON.stringify(d.sessions)])],
-    AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods') ? JSON.stringify(v) : v])]
+    AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])]
   };
 }
 function gsObjectsFromRows(rows){
@@ -2089,8 +2169,10 @@ async function gsPull(silent){
     const newTransfers = gsObjectsFromRows(trVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, toAmount:parseFloat(t.toAmount)||0, rate:parseFloat(t.rate)||1}));
     const newRates = {}; gsObjectsFromRows(rtVR.values).forEach(r=>{ if(r.currency) newRates[r.currency]=parseFloat(r.rate)||0; });
     const newAttDays = gsObjectsFromRows(adVR.values).map(r=>({ id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() }));
-    let newAttSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'', ramadanPeriods:[] };
-    const asRows = gsObjectsFromRows(asVR.values); if(asRows.length){ const s={}; asRows.forEach(r=>{ s[r.key]=r.value; }); newAttSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'', ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })() }; }
+    let newAttSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'', ramadanPeriods:[], assignedByList:[] };
+    const asRows = gsObjectsFromRows(asVR.values); if(asRows.length){ const s={}; asRows.forEach(r=>{ s[r.key]=r.value; }); newAttSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'',
+      ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })(),
+      assignedByList: (()=>{ try{ return JSON.parse(s.assignedByList||'[]'); }catch(e){ return []; } })() }; }
     const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
