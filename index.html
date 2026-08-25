@@ -253,7 +253,7 @@ table.rtable{width:100%; border-collapse:collapse;}
 
   <!-- ===== HUB: pick an app ===== -->
   <div id="hubScreen" style="display:none;">
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:40px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:40px; max-width:820px; margin-left:auto; margin-right:auto;">
       <div class="panel hub-card" id="hubFinanceCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
         <div style="font-size:44px; margin-bottom:14px;">💰</div>
         <div style="font-size:19px; font-weight:800;">Raseed</div>
@@ -268,6 +268,11 @@ table.rtable{width:100%; border-collapse:collapse;}
         <div style="font-size:44px; margin-bottom:14px;">🤝</div>
         <div style="font-size:19px; font-weight:800;">Kafalati</div>
         <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Sponsorships — monthly cases, sponsors, payments</div>
+      </div>
+      <div class="panel hub-card" id="hubAqsatiCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
+        <div style="font-size:44px; margin-bottom:14px;">💳</div>
+        <div style="font-size:19px; font-weight:800;">Aqsati</div>
+        <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Installments &amp; loans — car finance, BNPL, payment schedules</div>
       </div>
     </div>
   </div>
@@ -565,6 +570,136 @@ table.rtable{width:100%; border-collapse:collapse;}
     </section>
   </div>
   <!-- ===== end kafalatApp ===== -->
+
+  <!-- ===== AQSATI APP ===== -->
+  <div id="aqsatiApp" style="display:none;">
+    <div class="tabbar" id="aqTabbar">
+      <button class="active" data-aq-tab="overview">Overview</button>
+      <button data-aq-tab="plans">Plans</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="tbtn income" id="addAqPlanBtn">+ New installment plan</button>
+    </div>
+
+    <div class="range-row">
+      <div class="range-chip" data-aq-range="month">Month</div>
+      <div class="range-chip" data-aq-range="year">Year</div>
+      <div class="range-chip active" data-aq-range="all">All</div>
+      <div class="range-chip" id="aqCustomRangeChip">Custom range</div>
+      <span id="aqRangeCustomLabel" style="font-size:12px; color:var(--text-dim);"></span>
+      <input type="text" class="search-input" id="aqSearchInput" placeholder="🔍 Search plan name or note…">
+    </div>
+    <div class="range-nav" id="aqRangeNav">
+      <button id="aqRangeNavPrev">‹</button>
+      <div class="rnl" id="aqRangeNavLabel"></div>
+      <button id="aqRangeNavNext">›</button>
+    </div>
+
+    <!-- Aqsati Overview -->
+    <section id="aq-tab-overview">
+      <div class="dash-grid">
+        <div>
+          <div class="hero-card">
+            <div class="hero-label">Total Remaining</div>
+            <div class="hero-value" id="aqTotalRemaining"><span class="cur">AED</span>0.00</div>
+            <div class="hero-sub-row">
+              <div class="hero-sub income"><div class="hl">Total paid</div><div class="hv" id="aqTotalPaid">0</div></div>
+              <div class="hero-sub expense"><div class="hl">Original total</div><div class="hv" id="aqTotalOriginal">0</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Remaining by Plan</h3>
+            <div id="aqPlanBars"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3>Due This Month <span id="aqDueBadge" class="badge off" style="text-transform:none;"></span></h3>
+            <div id="aqDueThisMonth"></div>
+          </div>
+          <div class="panel">
+            <h3>Overdue</h3>
+            <div id="aqOverdue"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Aqsati Plans -->
+    <section id="aq-tab-plans" style="display:none;">
+      <div id="aqPlansView"></div>
+    </section>
+  </div>
+  <!-- ===== end aqsatiApp ===== -->
+</div>
+
+<!-- ===== aqsati custom range modal ===== -->
+<div class="modal-overlay" id="aqCustomRangeModal">
+  <div class="modal">
+    <h3>Custom range <span class="close-x" onclick="closeModal('aqCustomRangeModal')">✕</span></h3>
+    <div class="field"><label>From date</label><input type="date" id="aqCustomFrom"></div>
+    <div class="field"><label>To date</label><input type="date" id="aqCustomTo"></div>
+    <button class="btn solid block" id="aqApplyCustomRange">Apply</button>
+  </div>
+</div>
+
+<!-- ===== new plan modal (parameters -> auto-generates schedule) ===== -->
+<div class="modal-overlay" id="newAqPlanModal">
+  <div class="modal">
+    <h3>New installment plan <span class="close-x" onclick="closeModal('newAqPlanModal')">✕</span></h3>
+    <div class="field"><label>Plan name</label><input type="text" id="aqNewName" placeholder="e.g. Car - DIB, Tabby - laptop"></div>
+    <div class="field"><label>Type</label>
+      <select id="aqNewType">
+        <option>Car Finance</option><option>Loan</option><option>BNPL</option><option>Mortgage</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Currency</label>
+      <select id="aqNewCurrency">
+        <option value="AED">AED - UAE Dirham</option><option value="USD">USD - US Dollar</option>
+        <option value="SYP">SYP - Syrian Pound</option><option value="EUR">EUR - Euro</option><option value="SAR">SAR - Saudi Riyal</option>
+      </select>
+    </div>
+    <div class="field"><label>Purchase date (optional)</label><input type="date" id="aqNewPurchaseDate"></div>
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:1;"><label>First payment date</label><input type="date" id="aqNewStartDate"></div>
+      <div class="field" style="flex:1;"><label>Number of payments</label><input type="number" id="aqNewCount" min="1" step="1" value="12"></div>
+    </div>
+    <div class="field"><label>Amount per payment</label><input type="number" id="aqNewAmount" step="0.01"></div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="aqNewNote" placeholder="Note"></div>
+    <div class="note-box">Generates one payment per month on the same day as the first payment date. You can fine-tune individual dates/amounts and check off already-paid ones right after.</div>
+    <button class="btn solid block" id="aqCreatePlanBtn" style="margin-top:12px;">Create plan</button>
+  </div>
+</div>
+
+<!-- ===== edit plan modal (meta + full schedule) ===== -->
+<div class="modal-overlay" id="editAqPlanModal">
+  <div class="modal wide">
+    <h3><span id="aqPlanTitle">Edit plan</span><span class="close-x" onclick="closeModal('editAqPlanModal')">✕</span></h3>
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:2;"><label>Plan name</label><input type="text" id="aqEditName"></div>
+      <div class="field" style="flex:1;"><label>Type</label>
+        <select id="aqEditType"><option>Car Finance</option><option>Loan</option><option>BNPL</option><option>Mortgage</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:1;"><label>Currency</label>
+        <select id="aqEditCurrency"><option value="AED">AED</option><option value="USD">USD</option><option value="SYP">SYP</option><option value="EUR">EUR</option><option value="SAR">SAR</option></select>
+      </div>
+      <div class="field" style="flex:1;"><label>Purchase date</label><input type="date" id="aqEditPurchaseDate"></div>
+    </div>
+    <div class="field"><label>Note</label><input type="text" id="aqEditNote"></div>
+    <div class="field">
+      <label>Payment schedule — check off what's already paid, or tweak a date/amount</label>
+      <div id="aqScheduleList" style="max-height:340px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; padding:6px;"></div>
+      <button class="btn small" id="aqAddInstallmentBtn" style="margin-top:8px;">+ Add one more payment</button>
+    </div>
+    <div class="note-box" id="aqEditLivePreview">Total: 0 · Paid: 0 · Remaining: 0</div>
+    <div class="btn-row">
+      <button class="btn ghost" id="aqDeletePlanBtn">Delete plan</button>
+      <button class="btn solid" id="aqSavePlanBtn" style="flex:1;">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== kafalati custom range modal ===== -->
@@ -809,7 +944,7 @@ const GS_CLIENT_ID_DEFAULT = '425159118126-bh14caemjeug1i435rs9lpn96sidq0ot.apps
 const GS_SPREADSHEET_ID_DEFAULT = '1xHI4Cu_AyJ9ugPyqSGhQaAMfhbs6ikOB643K8HcL3d4';
 
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments})); }
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans})); }
 
 const ACCOUNT_ICONS = ['🏦','👛','💳','🐷','💰','🪙','💵','🏠','🚗','🌍','📱','💎','✈️','🎓','🏥','⛽'];
 const CATEGORY_ICONS_EXPENSE = ['🧺','🍦','☕','⛽','🏛️','👕','🎁','💊','🏋️','🧊','📱','🎮','💻','📚','⚽','🐴','🎸','👶','🏠','🚗','🎬','✈️','🎓','🤲','🍽️','🧾'];
@@ -839,6 +974,7 @@ if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-0
 if(!attSettings.assignedByList) attSettings.assignedByList = [];
 let kfSponsors = saved ? (saved.kfSponsors||[]) : [];
 let kfPayments = saved ? (saved.kfPayments||[]) : [];
+let debtPlans = saved ? (saved.debtPlans||[]) : [];
 if(!saved) saveLocal();
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -996,6 +1132,7 @@ function showHub(){
   document.getElementById('financeApp').style.display='none';
   document.getElementById('attendanceApp').style.display='none';
   document.getElementById('kafalatApp').style.display='none';
+  document.getElementById('aqsatiApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Choose an app';
   document.getElementById('brandMark').textContent='🔷';
@@ -1006,6 +1143,7 @@ function enterFinance(){
   document.getElementById('financeApp').style.display='block';
   document.getElementById('attendanceApp').style.display='none';
   document.getElementById('kafalatApp').style.display='none';
+  document.getElementById('aqsatiApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Raseed — personal finance';
   document.getElementById('brandMark').textContent='💰';
@@ -1017,6 +1155,7 @@ function enterAttendance(){
   document.getElementById('financeApp').style.display='none';
   document.getElementById('attendanceApp').style.display='block';
   document.getElementById('kafalatApp').style.display='none';
+  document.getElementById('aqsatiApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Dawami — work attendance';
   document.getElementById('brandMark').textContent='🕐';
@@ -1032,15 +1171,29 @@ function enterKafalat(){
   document.getElementById('financeApp').style.display='none';
   document.getElementById('attendanceApp').style.display='none';
   document.getElementById('kafalatApp').style.display='block';
+  document.getElementById('aqsatiApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Kafalati — sponsorships';
   document.getElementById('brandMark').textContent='🤝';
   renderRangeNavKf(); renderKfAll();
 }
+function enterAqsati(){
+  appView='aqsati';
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('financeApp').style.display='none';
+  document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('kafalatApp').style.display='none';
+  document.getElementById('aqsatiApp').style.display='block';
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Aqsati — installments & loans';
+  document.getElementById('brandMark').textContent='💳';
+  renderRangeNavAq(); renderAqAll();
+}
 document.getElementById('hubBtn').addEventListener('click', showHub);
 document.getElementById('hubFinanceCard').addEventListener('click', enterFinance);
 document.getElementById('hubAttendanceCard').addEventListener('click', enterAttendance);
 document.getElementById('hubKafalatCard').addEventListener('click', enterKafalat);
+document.getElementById('hubAqsatiCard').addEventListener('click', enterAqsati);
 
 /* ---------------- attendance: time filter (mirrors the finance one, own state) ---------------- */
 let attRangeMode='month', attRangeAnchor=new Date(), attCustomFrom=null, attCustomTo=null, attSearchQuery='';
@@ -2342,6 +2495,259 @@ document.getElementById('kfDeletePaymentBtn').addEventListener('click', ()=>{
   persist(); closeModal('editKfPaymentModal'); renderKfAll(); showToast('Deleted');
 });
 
+/* ================= AQSATI: installments & loans ================= */
+function getDebtPlan(id){ return debtPlans.find(p=>p.id===id); }
+function planTotal(p){ return (p.schedule||[]).reduce((s,r)=>s+r.amount,0); }
+function planPaid(p){ return (p.schedule||[]).filter(r=>r.paid).reduce((s,r)=>s+r.amount,0); }
+function planRemaining(p){ return planTotal(p)-planPaid(p); }
+function planNextDue(p){ const unpaid=(p.schedule||[]).filter(r=>!r.paid).sort((a,b)=>a.date.localeCompare(b.date)); return unpaid.length?unpaid[0]:null; }
+
+/* ---------------- aqsati: time filter (filters by installment due-date) ---------------- */
+let aqRangeMode='all', aqRangeAnchor=new Date(), aqCustomFrom=null, aqCustomTo=null, aqSearchQuery='';
+function computeAqRange(){
+  if(aqRangeMode==='custom' && aqCustomFrom && aqCustomTo) return {start:aqCustomFrom, end:aqCustomTo};
+  const d=new Date(aqRangeAnchor);
+  if(aqRangeMode==='month'){ const s=new Date(d.getFullYear(),d.getMonth(),1); const e=new Date(d.getFullYear(),d.getMonth()+1,0); return {start:fmtDate(s), end:fmtDate(e)}; }
+  if(aqRangeMode==='year'){ return {start:`${d.getFullYear()}-01-01`, end:`${d.getFullYear()}-12-31`}; }
+  return {start:'0000-01-01', end:'9999-12-31'};
+}
+function aqRangeNavLabel(){
+  const d=new Date(aqRangeAnchor);
+  if(aqRangeMode==='month') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if(aqRangeMode==='year') return `${d.getFullYear()}`;
+  return '';
+}
+function aqShiftRange(dir){
+  const d=new Date(aqRangeAnchor);
+  if(aqRangeMode==='month') d.setMonth(d.getMonth()+dir);
+  else if(aqRangeMode==='year') d.setFullYear(d.getFullYear()+dir);
+  aqRangeAnchor=d; renderRangeNavAq(); renderAqAll();
+}
+function renderRangeNavAq(){
+  const el=document.getElementById('aqRangeNav');
+  if(['month','year'].includes(aqRangeMode)){ el.style.display='flex'; document.getElementById('aqRangeNavLabel').textContent=aqRangeNavLabel(); }
+  else el.style.display='none';
+}
+document.getElementById('aqRangeNavPrev').addEventListener('click', ()=>aqShiftRange(-1));
+document.getElementById('aqRangeNavNext').addEventListener('click', ()=>aqShiftRange(1));
+document.querySelectorAll('.range-chip[data-aq-range]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#aqsatiApp .range-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); aqRangeMode=chip.dataset.aqRange; aqRangeAnchor=new Date();
+    document.getElementById('aqRangeCustomLabel').textContent='';
+    renderRangeNavAq(); renderAqAll();
+  });
+});
+document.getElementById('aqCustomRangeChip').addEventListener('click', ()=>openModal('aqCustomRangeModal'));
+document.getElementById('aqApplyCustomRange').addEventListener('click', ()=>{
+  const f=document.getElementById('aqCustomFrom').value, t=document.getElementById('aqCustomTo').value;
+  if(!f||!t){ showToast('Pick a start and end date'); return; }
+  aqCustomFrom=f; aqCustomTo=t; aqRangeMode='custom';
+  document.querySelectorAll('#aqsatiApp .range-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('aqRangeCustomLabel').textContent = `${f} → ${t}`;
+  renderRangeNavAq(); closeModal('aqCustomRangeModal'); renderAqAll();
+});
+let aqSearchDebounce;
+document.getElementById('aqSearchInput').addEventListener('input', (e)=>{
+  clearTimeout(aqSearchDebounce);
+  const val = e.target.value;
+  aqSearchDebounce = setTimeout(()=>{ aqSearchQuery = val.trim().toLowerCase(); renderAqAll(); }, 180);
+});
+function matchesAqSearch(p){
+  if(!aqSearchQuery) return true;
+  return (p.name||'').toLowerCase().includes(aqSearchQuery) || (p.note||'').toLowerCase().includes(aqSearchQuery);
+}
+function filteredDebtPlans(){ return debtPlans.filter(matchesAqSearch); }
+
+/* ---------------- aqsati: tabs ---------------- */
+let aqCurrentTab='overview';
+document.getElementById('aqTabbar').addEventListener('click',(e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#aqTabbar button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  aqCurrentTab=b.dataset.aqTab;
+  ['overview','plans'].forEach(t=>{ document.getElementById('aq-tab-'+t).style.display = (t===aqCurrentTab)?'block':'none'; });
+  renderAqAll();
+});
+function renderAqAll(){
+  if(aqCurrentTab==='overview') renderAqOverview();
+  else if(aqCurrentTab==='plans') renderAqPlans();
+}
+
+/* ---------------- aqsati: overview ---------------- */
+function renderAqOverview(){
+  const plans = filteredDebtPlans();
+  const cur = plans.length ? (plans[0].currency||'AED') : 'AED';
+  let totalRemaining=0, totalPaid=0, totalOriginal=0;
+  plans.forEach(p=>{ totalRemaining+=planRemaining(p); totalPaid+=planPaid(p); totalOriginal+=planTotal(p); });
+  document.getElementById('aqTotalRemaining').innerHTML = moneyHtml(totalRemaining, cur);
+  document.getElementById('aqTotalPaid').textContent = fmtMoney(totalPaid, cur);
+  document.getElementById('aqTotalOriginal').textContent = fmtMoney(totalOriginal, cur);
+
+  const barsEl = document.getElementById('aqPlanBars'); barsEl.innerHTML='';
+  const activePlans = [...plans].filter(p=>planRemaining(p)>0.01).sort((a,b)=>planRemaining(b)-planRemaining(a));
+  if(!activePlans.length){ barsEl.innerHTML='<div class="empty-hint">No active plans with a remaining balance</div>'; }
+  const maxRem = Math.max(1, ...activePlans.map(p=>planRemaining(p)));
+  activePlans.forEach(p=>{
+    const rem = planRemaining(p); const pct = Math.max(2, Math.round((rem/maxRem)*100));
+    const row=document.createElement('div'); row.className='acct-bar-row'; row.style.marginBottom='12px';
+    row.innerHTML = `<div class="acct-bar-top"><div class="an">${p.name}</div><div class="av">${fmtMoney(rem, p.currency||'AED')}</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%;"></div></div>`;
+    barsEl.appendChild(row);
+  });
+
+  const now = todayKey(); const monthKey = now.slice(0,7);
+  const dueThisMonth = [];
+  const overdue = [];
+  plans.forEach(p=>{
+    (p.schedule||[]).forEach((r,idx)=>{
+      if(r.paid) return;
+      if(r.date < now) overdue.push({plan:p, row:r, idx});
+      else if(r.date.startsWith(monthKey)) dueThisMonth.push({plan:p, row:r, idx});
+    });
+  });
+  dueThisMonth.sort((a,b)=>a.row.date.localeCompare(b.row.date));
+  overdue.sort((a,b)=>a.row.date.localeCompare(b.row.date));
+  document.getElementById('aqDueBadge').textContent = dueThisMonth.length ? dueThisMonth.length+' due' : '';
+
+  function renderQuickList(elId, items, overdueStyle){
+    const el = document.getElementById(elId);
+    if(!items.length){ el.innerHTML = `<div class="empty-hint">Nothing here 🎉</div>`; return; }
+    el.innerHTML='';
+    items.forEach(({plan,row,idx})=>{
+      const rowEl = document.createElement('div'); rowEl.className='list-row';
+      rowEl.innerHTML = `<div class="list-icon">${overdueStyle?'⚠️':'💳'}</div>
+        <div class="ltxt"><div class="ln1">${plan.name}</div><div class="ln2" style="${overdueStyle?'color:var(--expense-soft);':''}">${row.date}</div></div>
+        <div class="lval">${fmtMoney(row.amount, plan.currency||'AED')}</div>`;
+      rowEl.addEventListener('click', ()=>{
+        row.paid = true; persist(); renderAqAll();
+        showToast('Marked as paid');
+      });
+      el.appendChild(rowEl);
+    });
+  }
+  renderQuickList('aqDueThisMonth', dueThisMonth, false);
+  renderQuickList('aqOverdue', overdue, true);
+}
+
+/* ---------------- aqsati: plans tab ---------------- */
+function renderAqPlans(){
+  const el = document.getElementById('aqPlansView');
+  const plans = filteredDebtPlans();
+  if(!plans.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No installment plans yet — click "New installment plan"</div></div>'; return; }
+  const card = document.createElement('div'); card.className='card';
+  plans.forEach(p=>{
+    const next = planNextDue(p);
+    const row=document.createElement('div'); row.className='list-row';
+    row.innerHTML=`<div class="list-icon">💳</div>
+      <div class="ltxt"><div class="ln1">${p.name} <span style="color:var(--text-dim); font-weight:500; font-size:11.5px;">${p.type||''}</span></div>
+      <div class="ln2">${planPaid(p).toFixed(2)} / ${planTotal(p).toFixed(2)} ${p.currency||'AED'} paid${next?' · next due '+next.date:' · fully paid'}</div></div>
+      <div class="lval">${fmtMoney(planRemaining(p), p.currency||'AED')}</div>`;
+    row.addEventListener('click', ()=>openEditAqPlan(p));
+    card.appendChild(row);
+  });
+  el.innerHTML=''; el.appendChild(card);
+}
+
+/* ---------------- aqsati: new plan (auto-generates the schedule) ---------------- */
+document.getElementById('addAqPlanBtn').addEventListener('click', ()=>{
+  document.getElementById('aqNewName').value='';
+  document.getElementById('aqNewType').value='Car Finance';
+  document.getElementById('aqNewCurrency').value='AED';
+  document.getElementById('aqNewPurchaseDate').value='';
+  document.getElementById('aqNewStartDate').value=todayKey();
+  document.getElementById('aqNewCount').value=12;
+  document.getElementById('aqNewAmount').value='';
+  document.getElementById('aqNewNote').value='';
+  openModal('newAqPlanModal');
+});
+document.getElementById('aqCreatePlanBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('aqNewName').value.trim();
+  const startDate = document.getElementById('aqNewStartDate').value;
+  const count = parseInt(document.getElementById('aqNewCount').value)||0;
+  const amount = parseFloat(document.getElementById('aqNewAmount').value)||0;
+  if(!name){ showToast('Enter a plan name'); return; }
+  if(!startDate){ showToast('Pick the first payment date'); return; }
+  if(count<=0){ showToast('Enter a number of payments greater than zero'); return; }
+  if(amount<=0){ showToast('Enter an amount greater than zero'); return; }
+  const schedule = [];
+  const d0 = new Date(startDate+'T00:00:00');
+  for(let i=0;i<count;i++){
+    const d = new Date(d0.getFullYear(), d0.getMonth()+i, d0.getDate());
+    schedule.push({date: fmtDate(d), amount, paid:false});
+  }
+  const plan = {
+    id:'dp'+Date.now(), name, type:document.getElementById('aqNewType').value, currency:document.getElementById('aqNewCurrency').value,
+    purchaseDate:document.getElementById('aqNewPurchaseDate').value||'', installmentAmount:amount,
+    note:document.getElementById('aqNewNote').value.trim(), schedule
+  };
+  debtPlans.push(plan);
+  persist(); closeModal('newAqPlanModal'); renderAqAll(); showToast('Plan created — mark any already-paid installments now');
+  openEditAqPlan(plan);
+});
+
+/* ---------------- aqsati: edit plan (meta + full schedule) ---------------- */
+let editingAqPlanId=null, aqScheduleDraft=[];
+function openEditAqPlan(plan){
+  editingAqPlanId = plan.id;
+  document.getElementById('aqPlanTitle').textContent = plan.name;
+  document.getElementById('aqEditName').value = plan.name;
+  document.getElementById('aqEditType').value = plan.type||'Other';
+  document.getElementById('aqEditCurrency').value = plan.currency||'AED';
+  document.getElementById('aqEditPurchaseDate').value = plan.purchaseDate||'';
+  document.getElementById('aqEditNote').value = plan.note||'';
+  aqScheduleDraft = JSON.parse(JSON.stringify(plan.schedule||[]));
+  renderAqScheduleDraft();
+  openModal('editAqPlanModal');
+}
+function renderAqScheduleDraft(){
+  const el = document.getElementById('aqScheduleList'); el.innerHTML='';
+  aqScheduleDraft.forEach((r,i)=>{
+    const row = document.createElement('div');
+    row.style.cssText='display:flex; align-items:center; gap:8px; padding:7px 6px; border-bottom:1px solid var(--border);';
+    row.innerHTML = `
+      <input type="checkbox" ${r.paid?'checked':''} data-aqf="paid" data-aqi="${i}" style="width:16px; height:16px; accent-color:var(--income);">
+      <input type="date" value="${r.date}" data-aqf="date" data-aqi="${i}" style="flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;">
+      <input type="number" step="0.01" value="${r.amount}" data-aqf="amount" data-aqi="${i}" style="width:110px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 8px; color:var(--text); font-size:12px;">
+      <span class="rm" data-aqrm="${i}" style="color:var(--text-dim); cursor:pointer; font-size:13px;">✕</span>`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('[data-aqf="paid"]').forEach(inp=>{ inp.addEventListener('change', ()=>{ aqScheduleDraft[parseInt(inp.dataset.aqi)].paid = inp.checked; updateAqEditPreview(); }); });
+  el.querySelectorAll('[data-aqf="date"]').forEach(inp=>{ inp.addEventListener('input', ()=>{ aqScheduleDraft[parseInt(inp.dataset.aqi)].date = inp.value; }); });
+  el.querySelectorAll('[data-aqf="amount"]').forEach(inp=>{ inp.addEventListener('input', ()=>{ aqScheduleDraft[parseInt(inp.dataset.aqi)].amount = parseFloat(inp.value)||0; updateAqEditPreview(); }); });
+  el.querySelectorAll('[data-aqrm]').forEach(b=>{ b.addEventListener('click', ()=>{ aqScheduleDraft.splice(parseInt(b.dataset.aqrm),1); renderAqScheduleDraft(); updateAqEditPreview(); }); });
+  updateAqEditPreview();
+}
+function updateAqEditPreview(){
+  const total = aqScheduleDraft.reduce((s,r)=>s+r.amount,0);
+  const paid = aqScheduleDraft.filter(r=>r.paid).reduce((s,r)=>s+r.amount,0);
+  const cur = document.getElementById('aqEditCurrency').value;
+  document.getElementById('aqEditLivePreview').textContent = `Total: ${fmtMoney(total,cur)} · Paid: ${fmtMoney(paid,cur)} · Remaining: ${fmtMoney(total-paid,cur)}`;
+}
+document.getElementById('aqEditCurrency').addEventListener('change', updateAqEditPreview);
+document.getElementById('aqAddInstallmentBtn').addEventListener('click', ()=>{
+  const last = aqScheduleDraft[aqScheduleDraft.length-1];
+  let nextDate = todayKey();
+  if(last){ const d = new Date(last.date+'T00:00:00'); d.setMonth(d.getMonth()+1); nextDate = fmtDate(d); }
+  aqScheduleDraft.push({date: nextDate, amount: last?last.amount:0, paid:false});
+  renderAqScheduleDraft();
+});
+document.getElementById('aqSavePlanBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('aqEditName').value.trim();
+  if(!name){ showToast('Enter a plan name'); return; }
+  const plan = getDebtPlan(editingAqPlanId);
+  Object.assign(plan, {
+    name, type:document.getElementById('aqEditType').value, currency:document.getElementById('aqEditCurrency').value,
+    purchaseDate:document.getElementById('aqEditPurchaseDate').value||'', note:document.getElementById('aqEditNote').value.trim(),
+    schedule: aqScheduleDraft.slice().sort((a,b)=>a.date.localeCompare(b.date))
+  });
+  persist(); closeModal('editAqPlanModal'); renderAqAll(); showToast('Saved');
+});
+document.getElementById('aqDeletePlanBtn').addEventListener('click', ()=>{
+  if(!editingAqPlanId) return;
+  debtPlans = debtPlans.filter(p=>p.id!==editingAqPlanId);
+  persist(); closeModal('editAqPlanModal'); renderAqAll(); showToast('Plan deleted');
+});
+
 /* ---------------- persist ---------------- */
 function persist(){
   saveLocal();
@@ -2372,6 +2778,8 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kfSponsors), 'KafalatSponsors');
   const kfRows = kfPayments.map(p=>({id:p.id, label:p.label, date:p.date, caseValue:p.caseValue, currency:p.currency, note:p.note||'', splitsJson:JSON.stringify(p.splits||[])}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kfRows), 'KafalatPayments');
+  const dpRows = debtPlans.map(p=>({id:p.id, name:p.name, type:p.type||'', currency:p.currency||'AED', purchaseDate:p.purchaseDate||'', note:p.note||'', scheduleJson:JSON.stringify(p.schedule||[])}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dpRows), 'DebtPlans');
   return wb;
 }
 function stateFromWorkbook(wb){
@@ -2395,6 +2803,10 @@ function stateFromWorkbook(wb){
   kfPayments = wb.Sheets['KafalatPayments'] ? XLSX.utils.sheet_to_json(wb.Sheets['KafalatPayments']).map(r=>({
     id:r.id, label:r.label, date:r.date, caseValue:parseFloat(r.caseValue)||0, currency:r.currency||'SYP', note:r.note||'',
     splits: (()=>{ try{ return JSON.parse(r.splitsJson||'[]'); }catch(e){ return []; } })()
+  })) : [];
+  debtPlans = wb.Sheets['DebtPlans'] ? XLSX.utils.sheet_to_json(wb.Sheets['DebtPlans']).map(r=>({
+    id:r.id, name:r.name, type:r.type||'', currency:r.currency||'AED', purchaseDate:r.purchaseDate||'', note:r.note||'',
+    schedule: (()=>{ try{ return JSON.parse(r.scheduleJson||'[]').map(x=>({date:x.date, amount:parseFloat(x.amount)||0, paid:!!x.paid})); }catch(e){ return []; } })()
   })) : [];
 }
 async function writeToLinkedFile(){
@@ -2466,7 +2878,7 @@ document.getElementById('excelFileInput').addEventListener('change', (e)=>{
 });
 
 document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, exportedAt:new Date().toISOString()};
+  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans, exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=`raseed-backup-${todayKey()}.json`;
@@ -2484,7 +2896,8 @@ document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
       if(data.tx) tx=data.tx; if(data.transfers) transfers=data.transfers; if(data.fxRates) fxRates=data.fxRates;
       if(data.attDays) attDays=data.attDays; if(data.attSettings) attSettings=data.attSettings;
       if(data.kfSponsors) kfSponsors=data.kfSponsors; if(data.kfPayments) kfPayments=data.kfPayments;
-      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); if(appView==='kafalat') renderKfAll(); showToast('Imported');
+      if(data.debtPlans) debtPlans=data.debtPlans;
+      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); if(appView==='kafalat') renderKfAll(); if(appView==='aqsati') renderAqAll(); showToast('Imported');
     } catch(err){ showToast('Invalid file'); }
   };
   reader.readAsText(file);
@@ -2498,7 +2911,7 @@ let gsSpreadsheetId = localStorage.getItem(GS_LS.sheetId) || GS_SPREADSHEET_ID_D
 document.getElementById('gsClientId').value = gsClientId;
 document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
-const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments'];
+const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans'];
 const GS_HEADERS = {
   Accounts: ['id','name','currency','balance','date','included','icon'],
   Categories: ['id','name','icon','type'],
@@ -2508,7 +2921,8 @@ const GS_HEADERS = {
   AttendanceDays: ['id','date','dayType','note','sessionsJson'],
   AttendanceSettings: ['key','value'],
   KafalatSponsors: ['id','name'],
-  KafalatPayments: ['id','label','date','caseValue','currency','note','splitsJson']
+  KafalatPayments: ['id','label','date','caseValue','currency','note','splitsJson'],
+  DebtPlans: ['id','name','type','currency','purchaseDate','note','scheduleJson']
 };
 function gsRowsFromState(){
   return {
@@ -2520,7 +2934,8 @@ function gsRowsFromState(){
     AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,d.note||'',JSON.stringify(d.sessions)])],
     AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])],
     KafalatSponsors: [GS_HEADERS.KafalatSponsors, ...kfSponsors.map(s=>[s.id,s.name])],
-    KafalatPayments: [GS_HEADERS.KafalatPayments, ...kfPayments.map(p=>[p.id,p.label,p.date,p.caseValue,p.currency,p.note||'',JSON.stringify(p.splits||[])])]
+    KafalatPayments: [GS_HEADERS.KafalatPayments, ...kfPayments.map(p=>[p.id,p.label,p.date,p.caseValue,p.currency,p.note||'',JSON.stringify(p.splits||[])])],
+    DebtPlans: [GS_HEADERS.DebtPlans, ...debtPlans.map(p=>[p.id,p.name,p.type||'',p.currency||'AED',p.purchaseDate||'',p.note||'',JSON.stringify(p.schedule||[])])]
   };
 }
 function gsObjectsFromRows(rows){
@@ -2564,7 +2979,7 @@ async function gsPush(){
       method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
       body: JSON.stringify({ valueInputOption:'RAW', data: SHEETS_TABS.map(t=>({range:t+'!A1', values: rows[t]})) })
     });
-    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments});
+    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans});
   }catch(err){ console.error(err); showToast('Could not sync with Google Sheets — data kept locally'); }
 }
 async function gsPull(silent){
@@ -2574,7 +2989,7 @@ async function gsPull(silent){
     const res = await fetch(url, { headers:{Authorization:'Bearer '+gsAccessToken} });
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
-    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR] = data.valueRanges;
+    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE'}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0}));
@@ -2588,16 +3003,19 @@ async function gsPull(silent){
     const newKfSponsors = gsObjectsFromRows(ksVR.values);
     const newKfPayments = gsObjectsFromRows(kpVR.values).map(r=>({ id:r.id, label:r.label, date:r.date, caseValue:parseFloat(r.caseValue)||0, currency:r.currency||'SYP', note:r.note||'',
       splits: (()=>{ try{ return JSON.parse(r.splitsJson||'[]'); }catch(e){ return []; } })() }));
-    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments});
+    const newDebtPlans = gsObjectsFromRows(dpVR.values).map(r=>({ id:r.id, name:r.name, type:r.type||'', currency:r.currency||'AED', purchaseDate:r.purchaseDate||'', note:r.note||'',
+      schedule: (()=>{ try{ return JSON.parse(r.scheduleJson||'[]').map(x=>({date:x.date, amount:parseFloat(x.amount)||0, paid:!!x.paid})); }catch(e){ return []; } })() }));
+    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments, debtPlans:newDebtPlans});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
-    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments;
+    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments; debtPlans=newDebtPlans;
     gsLastSnapshot = incomingSnapshot;
     saveLocal();
     if(!silent) showToast('Pulled latest version from the sheet');
     renderAcctFilterSelect(); renderAll();
     if(appView==='attendance') renderAttAll();
     if(appView==='kafalat') renderKfAll();
+    if(appView==='aqsati') renderAqAll();
   }catch(err){ console.error(err); if(!silent) showToast('Could not pull from Google Sheets'); }
 }
 function startGsPolling(){ clearInterval(gsPollTimer); gsPollTimer = setInterval(()=>{ if(gsAccessToken) gsPull(true); }, 45000); }
