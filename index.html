@@ -253,7 +253,7 @@ table.rtable{width:100%; border-collapse:collapse;}
 
   <!-- ===== HUB: pick an app ===== -->
   <div id="hubScreen" style="display:none;">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:40px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-top:40px;">
       <div class="panel hub-card" id="hubFinanceCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
         <div style="font-size:44px; margin-bottom:14px;">💰</div>
         <div style="font-size:19px; font-weight:800;">Raseed</div>
@@ -263,6 +263,11 @@ table.rtable{width:100%; border-collapse:collapse;}
         <div style="font-size:44px; margin-bottom:14px;">🕐</div>
         <div style="font-size:19px; font-weight:800;">Dawami</div>
         <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Work attendance — check-in/out, tasks, overtime</div>
+      </div>
+      <div class="panel hub-card" id="hubKafalatCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
+        <div style="font-size:44px; margin-bottom:14px;">🤝</div>
+        <div style="font-size:19px; font-weight:800;">Kafalati</div>
+        <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Sponsorships — monthly cases, sponsors, payments</div>
       </div>
     </div>
   </div>
@@ -485,6 +490,120 @@ table.rtable{width:100%; border-collapse:collapse;}
     </section>
   </div>
   <!-- ===== end attendanceApp ===== -->
+
+  <!-- ===== KAFALATI APP ===== -->
+  <div id="kafalatApp" style="display:none;">
+    <div class="tabbar" id="kfTabbar">
+      <button class="active" data-kf-tab="overview">Overview</button>
+      <button data-kf-tab="payments">Payments</button>
+      <button data-kf-tab="sponsors">Sponsors</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="tbtn income" id="addKfPaymentBtn">+ New payment</button>
+    </div>
+
+    <div class="range-row">
+      <div class="range-chip" data-kf-range="month">Month</div>
+      <div class="range-chip" data-kf-range="year">Year</div>
+      <div class="range-chip active" data-kf-range="all">All</div>
+      <div class="range-chip" id="kfCustomRangeChip">Custom range</div>
+      <span id="kfRangeCustomLabel" style="font-size:12px; color:var(--text-dim);"></span>
+      <input type="text" class="search-input" id="kfSearchInput" placeholder="🔍 Search payment label or note…">
+    </div>
+    <div class="range-nav" id="kfRangeNav">
+      <button id="kfRangeNavPrev">‹</button>
+      <div class="rnl" id="kfRangeNavLabel"></div>
+      <button id="kfRangeNavNext">›</button>
+    </div>
+
+    <!-- Kafalati Overview -->
+    <section id="kf-tab-overview">
+      <div class="dash-grid">
+        <div>
+          <div class="hero-card">
+            <div class="hero-label">Total Value <span id="kfHeroRangeLabel" style="text-transform:none;"></span></div>
+            <div class="hero-value" id="kfTotalValue"><span class="cur">SYP</span>0</div>
+            <div class="hero-sub-row">
+              <div class="hero-sub income"><div class="hl">Total cases</div><div class="hv" id="kfTotalCases">0</div></div>
+              <div class="hero-sub"><div class="hl">Payments logged</div><div class="hv" id="kfPaymentCount">0</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>By Month</h3>
+            <div id="kfMonthBars"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3>Cases by Sponsor</h3>
+            <div id="kfSponsorBreakdown"></div>
+          </div>
+          <div class="panel">
+            <h3>Recent Payments</h3>
+            <div id="kfRecent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kafalati Payments -->
+    <section id="kf-tab-payments" style="display:none;">
+      <div id="kfPaymentsView"></div>
+    </section>
+
+    <!-- Kafalati Sponsors -->
+    <section id="kf-tab-sponsors" style="display:none;">
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Sponsors</h3>
+        <div id="kfSponsorsList"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; align-items:end;">
+          <div class="field" style="margin:0; flex:1;"><label>Name</label><input type="text" id="kfNewSponsorName" placeholder="e.g. Karam"></div>
+          <button class="btn solid small" id="kfAddSponsorBtn">+ Add sponsor</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- ===== end kafalatApp ===== -->
+</div>
+
+<!-- ===== kafalati custom range modal ===== -->
+<div class="modal-overlay" id="kfCustomRangeModal">
+  <div class="modal">
+    <h3>Custom range <span class="close-x" onclick="closeModal('kfCustomRangeModal')">✕</span></h3>
+    <div class="field"><label>From date</label><input type="date" id="kfCustomFrom"></div>
+    <div class="field"><label>To date</label><input type="date" id="kfCustomTo"></div>
+    <button class="btn solid block" id="kfApplyCustomRange">Apply</button>
+  </div>
+</div>
+
+<!-- ===== edit kafalati payment modal ===== -->
+<div class="modal-overlay" id="editKfPaymentModal">
+  <div class="modal wide">
+    <h3><span id="kfPaymentTitle">New payment</span><span class="close-x" onclick="closeModal('editKfPaymentModal')">✕</span></h3>
+    <div class="field"><label>Payment label</label><input type="text" id="kfLabel" placeholder="e.g. Aug2026"></div>
+    <div class="field"><label>Payment date</label><input type="date" id="kfPaymentDate"></div>
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:1;"><label>Case value</label><input type="number" id="kfCaseValue" step="1"></div>
+      <div class="field" style="flex:1;"><label>Currency</label>
+        <select id="kfCurrency">
+          <option value="SYP">SYP - Syrian Pound</option>
+          <option value="AED">AED - UAE Dirham</option>
+          <option value="USD">USD - US Dollar</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Cases per sponsor</label>
+      <div id="kfSplitsList"></div>
+    </div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="kfNote" placeholder="Note" list="kfNoteSuggestions"><datalist id="kfNoteSuggestions"></datalist></div>
+    <div class="note-box" id="kfLivePreview">Total: 0 cases · SYP 0</div>
+    <div class="btn-row">
+      <button class="btn ghost" id="kfDeletePaymentBtn" style="display:none;">Delete</button>
+      <button class="btn solid" id="kfSavePaymentBtn" style="flex:1;">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== edit attendance day modal ===== -->
@@ -690,7 +809,7 @@ const GS_CLIENT_ID_DEFAULT = '425159118126-bh14caemjeug1i435rs9lpn96sidq0ot.apps
 const GS_SPREADSHEET_ID_DEFAULT = '1xHI4Cu_AyJ9ugPyqSGhQaAMfhbs6ikOB643K8HcL3d4';
 
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings})); }
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments})); }
 
 const ACCOUNT_ICONS = ['🏦','👛','💳','🐷','💰','🪙','💵','🏠','🚗','🌍','📱','💎','✈️','🎓','🏥','⛽'];
 const CATEGORY_ICONS_EXPENSE = ['🧺','🍦','☕','⛽','🏛️','👕','🎁','💊','🏋️','🧊','📱','🎮','💻','📚','⚽','🐴','🎸','👶','🏠','🚗','🎬','✈️','🎓','🤲','🍽️','🧾'];
@@ -718,6 +837,8 @@ let attDays = saved ? (saved.attDays||[]) : [];
 let attSettings = saved ? (saved.attSettings||null) : null;
 if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-06-19', ramadanPeriods:[{start:'2026-02-18', end:'2026-03-19'}], assignedByList:[] };
 if(!attSettings.assignedByList) attSettings.assignedByList = [];
+let kfSponsors = saved ? (saved.kfSponsors||[]) : [];
+let kfPayments = saved ? (saved.kfPayments||[]) : [];
 if(!saved) saveLocal();
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -874,6 +995,7 @@ function showHub(){
   document.getElementById('hubScreen').style.display='block';
   document.getElementById('financeApp').style.display='none';
   document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('kafalatApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Choose an app';
   document.getElementById('brandMark').textContent='🔷';
@@ -883,6 +1005,7 @@ function enterFinance(){
   document.getElementById('hubScreen').style.display='none';
   document.getElementById('financeApp').style.display='block';
   document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('kafalatApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Raseed — personal finance';
   document.getElementById('brandMark').textContent='💰';
@@ -893,6 +1016,7 @@ function enterAttendance(){
   document.getElementById('hubScreen').style.display='none';
   document.getElementById('financeApp').style.display='none';
   document.getElementById('attendanceApp').style.display='block';
+  document.getElementById('kafalatApp').style.display='none';
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Dawami — work attendance';
   document.getElementById('brandMark').textContent='🕐';
@@ -902,9 +1026,21 @@ function enterAttendance(){
   document.getElementById('attSetStartDate').value=attSettings.startDate||'';
   renderRangeNavAtt(); renderAttAll();
 }
+function enterKafalat(){
+  appView='kafalat';
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('financeApp').style.display='none';
+  document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('kafalatApp').style.display='block';
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Kafalati — sponsorships';
+  document.getElementById('brandMark').textContent='🤝';
+  renderRangeNavKf(); renderKfAll();
+}
 document.getElementById('hubBtn').addEventListener('click', showHub);
 document.getElementById('hubFinanceCard').addEventListener('click', enterFinance);
 document.getElementById('hubAttendanceCard').addEventListener('click', enterAttendance);
+document.getElementById('hubKafalatCard').addEventListener('click', enterKafalat);
 
 /* ---------------- attendance: time filter (mirrors the finance one, own state) ---------------- */
 let attRangeMode='month', attRangeAnchor=new Date(), attCustomFrom=null, attCustomTo=null, attSearchQuery='';
@@ -1943,6 +2079,269 @@ document.getElementById('saveRatesBtn').addEventListener('click', ()=>{
   persist(); renderAll(); showToast('Rates saved');
 });
 
+/* ================= KAFALATI: sponsorships ================= */
+function getSponsor(id){ return kfSponsors.find(s=>s.id===id); }
+function getKfPayment(id){ return kfPayments.find(p=>p.id===id); }
+function paymentTotalCases(p){ return (p.splits||[]).reduce((s,x)=>s+(x.cases||0),0); }
+function paymentTotalValue(p){ return paymentTotalCases(p) * (p.caseValue||0); }
+
+/* ---------------- kafalati: time filter ---------------- */
+let kfRangeMode='all', kfRangeAnchor=new Date(), kfCustomFrom=null, kfCustomTo=null, kfSearchQuery='';
+function computeKfRange(){
+  if(kfRangeMode==='custom' && kfCustomFrom && kfCustomTo) return {start:kfCustomFrom, end:kfCustomTo};
+  const d=new Date(kfRangeAnchor);
+  if(kfRangeMode==='month'){ const s=new Date(d.getFullYear(),d.getMonth(),1); const e=new Date(d.getFullYear(),d.getMonth()+1,0); return {start:fmtDate(s), end:fmtDate(e)}; }
+  if(kfRangeMode==='year'){ return {start:`${d.getFullYear()}-01-01`, end:`${d.getFullYear()}-12-31`}; }
+  return {start:'0000-01-01', end:'9999-12-31'};
+}
+function kfRangeNavLabel(){
+  const d=new Date(kfRangeAnchor);
+  if(kfRangeMode==='month') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if(kfRangeMode==='year') return `${d.getFullYear()}`;
+  return '';
+}
+function kfShiftRange(dir){
+  const d=new Date(kfRangeAnchor);
+  if(kfRangeMode==='month') d.setMonth(d.getMonth()+dir);
+  else if(kfRangeMode==='year') d.setFullYear(d.getFullYear()+dir);
+  kfRangeAnchor=d; renderRangeNavKf(); renderKfAll();
+}
+function renderRangeNavKf(){
+  const el=document.getElementById('kfRangeNav');
+  if(['month','year'].includes(kfRangeMode)){ el.style.display='flex'; document.getElementById('kfRangeNavLabel').textContent=kfRangeNavLabel(); }
+  else el.style.display='none';
+}
+document.getElementById('kfRangeNavPrev').addEventListener('click', ()=>kfShiftRange(-1));
+document.getElementById('kfRangeNavNext').addEventListener('click', ()=>kfShiftRange(1));
+document.querySelectorAll('.range-chip[data-kf-range]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#kafalatApp .range-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); kfRangeMode=chip.dataset.kfRange; kfRangeAnchor=new Date();
+    document.getElementById('kfRangeCustomLabel').textContent='';
+    renderRangeNavKf(); renderKfAll();
+  });
+});
+document.getElementById('kfCustomRangeChip').addEventListener('click', ()=>openModal('kfCustomRangeModal'));
+document.getElementById('kfApplyCustomRange').addEventListener('click', ()=>{
+  const f=document.getElementById('kfCustomFrom').value, t=document.getElementById('kfCustomTo').value;
+  if(!f||!t){ showToast('Pick a start and end date'); return; }
+  kfCustomFrom=f; kfCustomTo=t; kfRangeMode='custom';
+  document.querySelectorAll('#kafalatApp .range-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('kfRangeCustomLabel').textContent = `${f} → ${t}`;
+  renderRangeNavKf(); closeModal('kfCustomRangeModal'); renderKfAll();
+});
+let kfSearchDebounce;
+document.getElementById('kfSearchInput').addEventListener('input', (e)=>{
+  clearTimeout(kfSearchDebounce);
+  const val = e.target.value;
+  kfSearchDebounce = setTimeout(()=>{ kfSearchQuery = val.trim().toLowerCase(); renderKfAll(); }, 180);
+});
+function filteredKfPayments(){
+  const r = computeKfRange();
+  return kfPayments.filter(p=>{
+    if(p.date<r.start || p.date>r.end) return false;
+    if(kfSearchQuery){
+      const q = kfSearchQuery;
+      if(!(p.label||'').toLowerCase().includes(q) && !(p.note||'').toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/* ---------------- kafalati: tabs ---------------- */
+let kfCurrentTab='overview';
+document.getElementById('kfTabbar').addEventListener('click',(e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#kfTabbar button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  kfCurrentTab=b.dataset.kfTab;
+  ['overview','payments','sponsors'].forEach(t=>{ document.getElementById('kf-tab-'+t).style.display = (t===kfCurrentTab)?'block':'none'; });
+  renderKfAll();
+});
+function renderKfAll(){
+  if(kfCurrentTab==='overview') renderKfOverview();
+  else if(kfCurrentTab==='payments') renderKfPayments();
+  else if(kfCurrentTab==='sponsors') renderKfSponsors();
+}
+
+/* ---------------- kafalati: overview ---------------- */
+function renderKfOverview(){
+  const list = filteredKfPayments();
+  const cur = list.length ? (list[0].currency||'SYP') : 'SYP';
+  let totalCases=0, totalValue=0;
+  list.forEach(p=>{ totalCases+=paymentTotalCases(p); totalValue+=paymentTotalValue(p); });
+  document.getElementById('kfHeroRangeLabel').textContent = kfRangeMode==='all' ? '(all time)' : `(${kfRangeMode})`;
+  document.getElementById('kfTotalValue').innerHTML = moneyHtml(totalValue, cur);
+  document.getElementById('kfTotalCases').textContent = totalCases;
+  document.getElementById('kfPaymentCount').textContent = list.length;
+
+  const byMonth = {};
+  list.forEach(p=>{ const mk=p.date.slice(0,7); if(!byMonth[mk]) byMonth[mk]={cases:0,value:0}; byMonth[mk].cases+=paymentTotalCases(p); byMonth[mk].value+=paymentTotalValue(p); });
+  const mb = document.getElementById('kfMonthBars'); mb.innerHTML='';
+  const months = Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  if(!months.length){ mb.innerHTML='<div class="empty-hint">No payments in this period</div>'; }
+  const maxVal = Math.max(1, ...months.map(m=>byMonth[m].value));
+  months.forEach(m=>{
+    const v = byMonth[m];
+    const pct = Math.max(2, Math.round((v.value/maxVal)*100));
+    const row = document.createElement('div'); row.className='acct-bar-row'; row.style.marginBottom='12px';
+    row.innerHTML = `<div class="acct-bar-top"><div class="an">${monthLabel(m)}</div><div class="av">${v.cases} cases · ${fmtMoney(v.value,cur)}</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%;"></div></div>`;
+    mb.appendChild(row);
+  });
+
+  const sponsorSums = {};
+  list.forEach(p=>{ (p.splits||[]).forEach(sp=>{ sponsorSums[sp.sponsorId]=(sponsorSums[sp.sponsorId]||0)+sp.cases; }); });
+  const sbEl = document.getElementById('kfSponsorBreakdown');
+  const entries = Object.entries(sponsorSums).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ sbEl.innerHTML='<div class="empty-hint">No sponsor data in this period</div>'; }
+  else{
+    sbEl.innerHTML='';
+    const totalS = entries.reduce((s,[,v])=>s+v,0)||1;
+    entries.forEach(([sid,val])=>{
+      const sp = getSponsor(sid); const pct = Math.round((val/totalS)*100);
+      const row=document.createElement('div'); row.style.marginBottom='10px';
+      row.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;"><span>${sp?sp.name:'Unknown'}</span><span style="color:var(--text-dim);">${val} cases · ${pct}%</span></div>
+        <div class="bar-cell"><div class="bar-fill" style="width:${pct}%; background:var(--gold);"></div></div>`;
+      sbEl.appendChild(row);
+    });
+  }
+
+  const rel = document.getElementById('kfRecent');
+  const recent = [...list].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  rel.innerHTML = recent.length ? '' : '<div class="empty-hint">No payments yet</div>';
+  recent.forEach(p=>{
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML = `<div class="list-icon">🤝</div><div class="ltxt"><div class="ln1">${p.label}</div><div class="ln2">${p.date} · ${paymentTotalCases(p)} cases</div></div><div class="lval">${fmtMoney(paymentTotalValue(p), p.currency||'SYP')}</div>`;
+    rel.appendChild(row);
+  });
+}
+
+/* ---------------- kafalati: payments log ---------------- */
+function renderKfPayments(){
+  const el = document.getElementById('kfPaymentsView');
+  const list = filteredKfPayments().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No payments in this period</div></div>'; return; }
+  const groups={}; list.forEach(p=>{ const yk=p.date.slice(0,4); (groups[yk]=groups[yk]||[]).push(p); });
+  const years = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  el.innerHTML='';
+  years.forEach(yk=>{
+    const payments = groups[yk];
+    const yCases = payments.reduce((s,p)=>s+paymentTotalCases(p),0);
+    const yValue = payments.reduce((s,p)=>s+paymentTotalValue(p),0);
+    const head=document.createElement('div'); head.className='group-head'; head.style.cursor='default';
+    head.innerHTML = `<div class="gh-l">${yk}</div><div class="gh-r"><span class="gh-count">${payments.length} payment${payments.length>1?'s':''}</span><span class="gh-total pos">${yCases} cases · ${fmtMoney(yValue, payments[0].currency||'SYP')}</span></div>`;
+    el.appendChild(head);
+    const body=document.createElement('div'); body.className='group-body';
+    payments.forEach(p=>{
+      const splitSummary = (p.splits||[]).filter(s=>s.cases>0).map(s=>{ const sp=getSponsor(s.sponsorId); return `${sp?sp.name:'?'}: ${s.cases}`; }).join(', ');
+      const row=document.createElement('div'); row.className='tx-row';
+      row.innerHTML = `<div class="tx-icon">🤝</div>
+        <div class="tx-info"><div class="tn">${p.label} <span style="color:var(--text-dim); font-weight:500; font-size:11.5px;">${p.date}</span></div>
+        <div class="ts">${splitSummary || 'no splits'}${p.note?' · '+p.note:''}</div></div>
+        <div class="tx-amt income">${paymentTotalCases(p)} cases · ${fmtMoney(paymentTotalValue(p), p.currency||'SYP')}</div>
+        <div class="tx-actions"><span data-edit="${p.id}">✎</span><span data-del="${p.id}">✕</span></div>`;
+      body.appendChild(row);
+    });
+    el.appendChild(body);
+  });
+  el.querySelectorAll('[data-del]').forEach(b=>{ b.addEventListener('click', ()=>{ kfPayments=kfPayments.filter(x=>x.id!==b.dataset.del); persist(); renderKfAll(); }); });
+  el.querySelectorAll('[data-edit]').forEach(b=>{ b.addEventListener('click', ()=>{ openEditKfPayment(getKfPayment(b.dataset.edit)); }); });
+}
+
+/* ---------------- kafalati: sponsors management ---------------- */
+function renderKfSponsors(){
+  const el = document.getElementById('kfSponsorsList');
+  if(!kfSponsors.length){ el.innerHTML='<div class="empty-hint">No sponsors added yet</div>'; return; }
+  el.innerHTML='';
+  kfSponsors.forEach(s=>{
+    const totalCases = kfPayments.reduce((sum,p)=>sum + ((p.splits||[]).find(x=>x.sponsorId===s.id)?.cases||0), 0);
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML=`<div class="list-icon">🤝</div><div class="ltxt"><div class="ln1">${s.name}</div><div class="ln2">${totalCases} cases total (all time)</div></div><div class="lval" data-rmsp="${s.id}" style="color:var(--expense-soft); cursor:pointer;">✕</div>`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('[data-rmsp]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id=b.dataset.rmsp;
+      kfSponsors = kfSponsors.filter(s=>s.id!==id);
+      kfPayments.forEach(p=>{ p.splits = (p.splits||[]).filter(sp=>sp.sponsorId!==id); });
+      persist(); renderKfAll(); showToast('Sponsor removed');
+    });
+  });
+}
+document.getElementById('kfAddSponsorBtn').addEventListener('click', ()=>{
+  const inp = document.getElementById('kfNewSponsorName');
+  const name = inp.value.trim();
+  if(!name){ showToast('Enter a sponsor name'); return; }
+  if(kfSponsors.some(s=>s.name.toLowerCase()===name.toLowerCase())){ showToast('Sponsor already exists'); return; }
+  kfSponsors.push({id:'sp'+Date.now(), name});
+  inp.value=''; persist(); renderKfAll(); showToast('Sponsor added');
+});
+
+/* ---------------- kafalati: edit/add payment modal ---------------- */
+let editingKfPaymentId=null, kfSplitsDraft=[];
+function openEditKfPayment(existing){
+  if(!kfSponsors.length){ showToast('Add a sponsor first from the Sponsors tab'); document.querySelector('#kfTabbar [data-kf-tab="sponsors"]').click(); return; }
+  editingKfPaymentId = existing ? existing.id : null;
+  document.getElementById('kfPaymentTitle').textContent = existing ? 'Edit payment' : 'New payment';
+  document.getElementById('kfLabel').value = existing ? existing.label : '';
+  document.getElementById('kfPaymentDate').value = existing ? existing.date : todayKey();
+  document.getElementById('kfCaseValue').value = existing ? existing.caseValue : '';
+  document.getElementById('kfCurrency').value = existing ? (existing.currency||'SYP') : 'SYP';
+  document.getElementById('kfNote').value = existing ? (existing.note||'') : '';
+  populateTextSuggestions('kfNoteSuggestions', kfPayments.map(p=>p.note));
+  kfSplitsDraft = kfSponsors.map(s=>{
+    const existingSplit = existing ? (existing.splits||[]).find(x=>x.sponsorId===s.id) : null;
+    return { sponsorId: s.id, cases: existingSplit ? existingSplit.cases : 0 };
+  });
+  document.getElementById('kfDeletePaymentBtn').style.display = existing ? 'inline-flex' : 'none';
+  renderKfSplitsDraft();
+  openModal('editKfPaymentModal');
+}
+document.getElementById('addKfPaymentBtn').addEventListener('click', ()=>openEditKfPayment(null));
+function renderKfSplitsDraft(){
+  const el = document.getElementById('kfSplitsList'); el.innerHTML='';
+  kfSplitsDraft.forEach((sp,i)=>{
+    const sponsor = getSponsor(sp.sponsorId);
+    const row = document.createElement('div'); row.style.cssText='display:flex; align-items:center; gap:10px; margin-bottom:8px;';
+    row.innerHTML = `<div style="flex:1; font-size:13px; font-weight:600;">${sponsor?sponsor.name:'?'}</div>
+      <input type="number" min="0" step="1" value="${sp.cases}" data-kfi="${i}" style="width:90px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-size:13px;">`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('[data-kfi]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ kfSplitsDraft[parseInt(inp.dataset.kfi)].cases = parseInt(inp.value)||0; updateKfLivePreview(); });
+  });
+  updateKfLivePreview();
+}
+function updateKfLivePreview(){
+  const totalCases = kfSplitsDraft.reduce((s,x)=>s+x.cases,0);
+  const caseValue = parseFloat(document.getElementById('kfCaseValue').value)||0;
+  const cur = document.getElementById('kfCurrency').value;
+  document.getElementById('kfLivePreview').textContent = `Total: ${totalCases} cases · ${fmtMoney(totalCases*caseValue, cur)}`;
+}
+document.getElementById('kfCaseValue').addEventListener('input', updateKfLivePreview);
+document.getElementById('kfCurrency').addEventListener('change', updateKfLivePreview);
+document.getElementById('kfSavePaymentBtn').addEventListener('click', ()=>{
+  const label = document.getElementById('kfLabel').value.trim();
+  const date = document.getElementById('kfPaymentDate').value;
+  const caseValue = parseFloat(document.getElementById('kfCaseValue').value)||0;
+  if(!label){ showToast('Enter a payment label'); return; }
+  if(!date){ showToast('Pick a payment date'); return; }
+  if(caseValue<=0){ showToast('Enter a case value greater than zero'); return; }
+  const payload = {
+    label, date, caseValue, currency: document.getElementById('kfCurrency').value,
+    note: document.getElementById('kfNote').value.trim(),
+    splits: kfSplitsDraft.filter(s=>s.cases>0).map(s=>({...s}))
+  };
+  if(editingKfPaymentId){ Object.assign(getKfPayment(editingKfPaymentId), payload); }
+  else { kfPayments.push({ id:'kf'+Date.now(), ...payload }); }
+  persist(); closeModal('editKfPaymentModal'); renderKfAll(); showToast(editingKfPaymentId?'Updated':'Saved');
+});
+document.getElementById('kfDeletePaymentBtn').addEventListener('click', ()=>{
+  if(!editingKfPaymentId) return;
+  kfPayments = kfPayments.filter(x=>x.id!==editingKfPaymentId);
+  persist(); closeModal('editKfPaymentModal'); renderKfAll(); showToast('Deleted');
+});
+
 /* ---------------- persist ---------------- */
 function persist(){
   saveLocal();
@@ -1966,10 +2365,13 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transfers), 'Transfers');
   const ratesRows = Object.entries(fxRates).map(([currency,rate])=>({currency,rate}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ratesRows), 'Rates');
-  const attRows = attDays.map(d=>({id:d.id, date:d.date, dayType:d.dayType, sessionsJson:JSON.stringify(d.sessions)}));
+  const attRows = attDays.map(d=>({id:d.id, date:d.date, dayType:d.dayType, note:d.note||'', sessionsJson:JSON.stringify(d.sessions)}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attRows), 'AttendanceDays');
   const settingsRows = Object.entries(attSettings).map(([key,value])=>({key, value: (key==='ramadanPeriods'||key==='assignedByList') ? JSON.stringify(value) : value}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(settingsRows), 'AttendanceSettings');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kfSponsors), 'KafalatSponsors');
+  const kfRows = kfPayments.map(p=>({id:p.id, label:p.label, date:p.date, caseValue:p.caseValue, currency:p.currency, note:p.note||'', splitsJson:JSON.stringify(p.splits||[])}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kfRows), 'KafalatPayments');
   return wb;
 }
 function stateFromWorkbook(wb){
@@ -1982,13 +2384,18 @@ function stateFromWorkbook(wb){
   accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; });
   tx.forEach(t=>{ t.amount=parseFloat(t.amount)||0; });
   transfers.forEach(t=>{ t.amount=parseFloat(t.amount)||0; t.toAmount=parseFloat(t.toAmount)||t.amount; t.rate=parseFloat(t.rate)||1; });
-  attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
+  attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, note:r.note||'', sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
   if(wb.Sheets['AttendanceSettings']){
     const s = {}; XLSX.utils.sheet_to_json(wb.Sheets['AttendanceSettings']).forEach(r=>{ s[r.key]=r.value; });
     attSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'',
       ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })(),
       assignedByList: (()=>{ try{ return JSON.parse(s.assignedByList||'[]'); }catch(e){ return []; } })() };
   }
+  kfSponsors = wb.Sheets['KafalatSponsors'] ? XLSX.utils.sheet_to_json(wb.Sheets['KafalatSponsors']) : [];
+  kfPayments = wb.Sheets['KafalatPayments'] ? XLSX.utils.sheet_to_json(wb.Sheets['KafalatPayments']).map(r=>({
+    id:r.id, label:r.label, date:r.date, caseValue:parseFloat(r.caseValue)||0, currency:r.currency||'SYP', note:r.note||'',
+    splits: (()=>{ try{ return JSON.parse(r.splitsJson||'[]'); }catch(e){ return []; } })()
+  })) : [];
 }
 async function writeToLinkedFile(){
   try{
@@ -2059,7 +2466,7 @@ document.getElementById('excelFileInput').addEventListener('change', (e)=>{
 });
 
 document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, exportedAt:new Date().toISOString()};
+  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=`raseed-backup-${todayKey()}.json`;
@@ -2076,7 +2483,8 @@ document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
       if(data.accounts) accounts=data.accounts; if(data.categories) categories=data.categories;
       if(data.tx) tx=data.tx; if(data.transfers) transfers=data.transfers; if(data.fxRates) fxRates=data.fxRates;
       if(data.attDays) attDays=data.attDays; if(data.attSettings) attSettings=data.attSettings;
-      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); showToast('Imported');
+      if(data.kfSponsors) kfSponsors=data.kfSponsors; if(data.kfPayments) kfPayments=data.kfPayments;
+      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); if(appView==='kafalat') renderKfAll(); showToast('Imported');
     } catch(err){ showToast('Invalid file'); }
   };
   reader.readAsText(file);
@@ -2090,15 +2498,17 @@ let gsSpreadsheetId = localStorage.getItem(GS_LS.sheetId) || GS_SPREADSHEET_ID_D
 document.getElementById('gsClientId').value = gsClientId;
 document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
-const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings'];
+const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments'];
 const GS_HEADERS = {
   Accounts: ['id','name','currency','balance','date','included','icon'],
   Categories: ['id','name','icon','type'],
   Transactions: ['id','type','accountId','categoryId','amount','currency','date','note'],
   Transfers: ['id','accountId','toAccountId','amount','currency','toAmount','toCurrency','rate','date','note'],
   Rates: ['currency','rate'],
-  AttendanceDays: ['id','date','dayType','sessionsJson'],
-  AttendanceSettings: ['key','value']
+  AttendanceDays: ['id','date','dayType','note','sessionsJson'],
+  AttendanceSettings: ['key','value'],
+  KafalatSponsors: ['id','name'],
+  KafalatPayments: ['id','label','date','caseValue','currency','note','splitsJson']
 };
 function gsRowsFromState(){
   return {
@@ -2107,8 +2517,10 @@ function gsRowsFromState(){
     Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||''])],
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
     Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])],
-    AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,JSON.stringify(d.sessions)])],
-    AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])]
+    AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,d.note||'',JSON.stringify(d.sessions)])],
+    AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])],
+    KafalatSponsors: [GS_HEADERS.KafalatSponsors, ...kfSponsors.map(s=>[s.id,s.name])],
+    KafalatPayments: [GS_HEADERS.KafalatPayments, ...kfPayments.map(p=>[p.id,p.label,p.date,p.caseValue,p.currency,p.note||'',JSON.stringify(p.splits||[])])]
   };
 }
 function gsObjectsFromRows(rows){
@@ -2152,7 +2564,7 @@ async function gsPush(){
       method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
       body: JSON.stringify({ valueInputOption:'RAW', data: SHEETS_TABS.map(t=>({range:t+'!A1', values: rows[t]})) })
     });
-    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings});
+    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments});
   }catch(err){ console.error(err); showToast('Could not sync with Google Sheets — data kept locally'); }
 }
 async function gsPull(silent){
@@ -2162,26 +2574,30 @@ async function gsPull(silent){
     const res = await fetch(url, { headers:{Authorization:'Bearer '+gsAccessToken} });
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
-    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR] = data.valueRanges;
+    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE'}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0}));
     const newTransfers = gsObjectsFromRows(trVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, toAmount:parseFloat(t.toAmount)||0, rate:parseFloat(t.rate)||1}));
     const newRates = {}; gsObjectsFromRows(rtVR.values).forEach(r=>{ if(r.currency) newRates[r.currency]=parseFloat(r.rate)||0; });
-    const newAttDays = gsObjectsFromRows(adVR.values).map(r=>({ id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() }));
+    const newAttDays = gsObjectsFromRows(adVR.values).map(r=>({ id:r.id, date:r.date, dayType:r.dayType, note:r.note||'', sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() }));
     let newAttSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'', ramadanPeriods:[], assignedByList:[] };
     const asRows = gsObjectsFromRows(asVR.values); if(asRows.length){ const s={}; asRows.forEach(r=>{ s[r.key]=r.value; }); newAttSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'',
       ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })(),
       assignedByList: (()=>{ try{ return JSON.parse(s.assignedByList||'[]'); }catch(e){ return []; } })() }; }
-    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings});
+    const newKfSponsors = gsObjectsFromRows(ksVR.values);
+    const newKfPayments = gsObjectsFromRows(kpVR.values).map(r=>({ id:r.id, label:r.label, date:r.date, caseValue:parseFloat(r.caseValue)||0, currency:r.currency||'SYP', note:r.note||'',
+      splits: (()=>{ try{ return JSON.parse(r.splitsJson||'[]'); }catch(e){ return []; } })() }));
+    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
-    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings;
+    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments;
     gsLastSnapshot = incomingSnapshot;
     saveLocal();
     if(!silent) showToast('Pulled latest version from the sheet');
     renderAcctFilterSelect(); renderAll();
     if(appView==='attendance') renderAttAll();
+    if(appView==='kafalat') renderKfAll();
   }catch(err){ console.error(err); if(!silent) showToast('Could not pull from Google Sheets'); }
 }
 function startGsPolling(){ clearInterval(gsPollTimer); gsPollTimer = setInterval(()=>{ if(gsAccessToken) gsPull(true); }, 45000); }
