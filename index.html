@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0A0A0B">
-<title>Raseed — Personal Finance Dashboard</title>
+<title>AUJ — Raseed &amp; Dawami</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -219,6 +219,19 @@ table.rtable{width:100%; border-collapse:collapse;}
 .rate-row .rc{width:60px; font-weight:700; font-size:12.5px;}
 .rate-row input{flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:7px 10px; color:var(--text); font-size:12.5px;}
 .rate-row .rl{font-size:11px; color:var(--text-dim); width:90px;}
+.hub-card{transition:.15s; border-width:1.5px;}
+.hub-card:hover{border-color:var(--gold); transform:translateY(-2px);}
+.att-session-row{display:grid; grid-template-columns:1fr 1fr 1fr 1.6fr 1.2fr auto; gap:8px; align-items:end; margin-bottom:10px; padding:10px; background:var(--surface-2); border-radius:10px;}
+.att-session-row label{font-size:10px; color:var(--text-dim); margin-bottom:4px; display:block;}
+.att-session-row input, .att-session-row select{width:100%; background:var(--surface-3); border:1px solid var(--border); border-radius:8px; padding:7px 8px; color:var(--text); font-size:12px;}
+.att-session-row .rm{color:var(--expense-soft); cursor:pointer; font-size:14px; padding:6px;}
+.badge{display:inline-block; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:700;}
+.badge.normal{background:rgba(95,180,137,0.16); color:var(--income-soft);}
+.badge.weekend{background:rgba(154,154,160,0.16); color:var(--text-dim);}
+.badge.holiday{background:rgba(201,162,39,0.16); color:var(--gold-soft);}
+.badge.sick{background:rgba(196,87,74,0.16); color:var(--expense-soft);}
+.badge.leave{background:rgba(127,174,156,0.16); color:var(--teal-soft);}
+.badge.off{background:rgba(154,154,160,0.16); color:var(--text-dim);}
 </style>
 </head>
 <body>
@@ -226,10 +239,11 @@ table.rtable{width:100%; border-collapse:collapse;}
 <div class="wrap">
   <header>
     <div class="brand">
-      <div class="brand-mark">💰</div>
-      <div><div class="t">Raseed</div><div class="s">Personal finance dashboard</div></div>
+      <div class="brand-mark" id="brandMark">🔷</div>
+      <div><div class="t" id="brandTitle">AUJ</div><div class="s" id="brandSub">Choose an app</div></div>
     </div>
     <div class="header-right">
+      <div class="icon-btn" id="hubBtn" title="Switch app">🏠</div>
       <div class="storage-pill local" id="storagePill">
         <div class="dot"></div><span id="storageLabel">Storage: local browser</span>
       </div>
@@ -237,6 +251,23 @@ table.rtable{width:100%; border-collapse:collapse;}
     </div>
   </header>
 
+  <!-- ===== HUB: pick an app ===== -->
+  <div id="hubScreen" style="display:none;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:40px;">
+      <div class="panel hub-card" id="hubFinanceCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
+        <div style="font-size:44px; margin-bottom:14px;">💰</div>
+        <div style="font-size:19px; font-weight:800;">Raseed</div>
+        <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Personal finance — accounts, transactions, transfers</div>
+      </div>
+      <div class="panel hub-card" id="hubAttendanceCard" style="cursor:pointer; text-align:center; padding:44px 20px;">
+        <div style="font-size:44px; margin-bottom:14px;">🕐</div>
+        <div style="font-size:19px; font-weight:800;">Dawami</div>
+        <div style="font-size:12.5px; color:var(--text-dim); margin-top:6px;">Work attendance — check-in/out, tasks, overtime</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="financeApp" style="display:none;">
   <div class="tabbar" id="tabbar">
     <button class="active" data-tab="overview">Overview</button>
     <button data-tab="list">Transactions</button>
@@ -347,6 +378,146 @@ table.rtable{width:100%; border-collapse:collapse;}
       <div class="card" id="categoriesList" style="display:none;"></div>
     </div>
   </section>
+  </div>
+  <!-- ===== end financeApp ===== -->
+
+  <!-- ===== ATTENDANCE APP ===== -->
+  <div id="attendanceApp" style="display:none;">
+    <div class="tabbar" id="attTabbar">
+      <button class="active" data-att-tab="overview">Overview</button>
+      <button data-att-tab="log">Daily Log</button>
+      <button data-att-tab="leaves">Leaves &amp; Holidays</button>
+      <button data-att-tab="settings">Schedule Settings</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="tbtn income" id="addAttDayBtn">+ Log a work day</button>
+    </div>
+
+    <div class="range-row">
+      <div class="range-chip" data-att-range="day">Day</div>
+      <div class="range-chip" data-att-range="week">Week</div>
+      <div class="range-chip active" data-att-range="month">Month</div>
+      <div class="range-chip" data-att-range="year">Year</div>
+      <div class="range-chip" data-att-range="all">All (since start date)</div>
+      <div class="range-chip" id="attCustomRangeChip">Custom range</div>
+      <span id="attRangeCustomLabel" style="font-size:12px; color:var(--text-dim);"></span>
+      <input type="text" class="search-input" id="attSearchInput" placeholder="🔍 Search tasks, assigned by, notes…">
+    </div>
+    <div class="range-nav" id="attRangeNav">
+      <button id="attRangeNavPrev">‹</button>
+      <div class="rnl" id="attRangeNavLabel"></div>
+      <button id="attRangeNavNext">›</button>
+    </div>
+
+    <!-- Attendance Overview -->
+    <section id="att-tab-overview">
+      <div class="dash-grid">
+        <div>
+          <div class="hero-card">
+            <div class="hero-label">Overtime Balance (since start date)</div>
+            <div class="hero-value" id="attOtBalance"><span class="cur">hrs</span>0.0</div>
+            <div class="hero-sub-row">
+              <div class="hero-sub income"><div class="hl">Required</div><div class="hv" id="attReqYtd">0</div></div>
+              <div class="hero-sub expense"><div class="hl">Actual</div><div class="hv" id="attActYtd">0</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>By Month <span style="text-transform:none; font-weight:500; font-size:11px;">(weekends auto-counted at 0 — no need to log them)</span></h3>
+            <div id="attMonthBars"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3>Time Breakdown <span class="tab-mini" id="attBreakdownTabs" style="text-transform:none;"><button class="active" data-bd="workType">Work Type</button><button data-bd="assignedBy">Assigned By</button></span></h3>
+            <div id="attBreakdown"></div>
+          </div>
+          <div class="panel">
+            <h3>Recent Entries</h3>
+            <div id="attRecent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Attendance Daily Log -->
+    <section id="att-tab-log" style="display:none;">
+      <div class="note-box" style="margin-bottom:14px;">Only days you actually log appear here. Weekends and unlogged weekdays are handled automatically in the totals — you don't need to add them.</div>
+      <div id="attLogView"></div>
+    </section>
+
+    <!-- Leaves & Holidays -->
+    <section id="att-tab-leaves" style="display:none;">
+      <div class="panel" style="margin-bottom:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-size:12.5px; color:var(--text-dim);">Mark holidays, sick leave, annual leave, or other off days here — with an optional note. No check-in/out needed.</div>
+        <button class="btn solid small" id="addAttLeaveBtn">+ Add leave / holiday</button>
+      </div>
+      <div id="attLeavesView"></div>
+    </section>
+
+    <!-- Attendance Settings -->
+    <section id="att-tab-settings" style="display:none;">
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Standard Schedule</h3>
+        <div class="field"><label>Employment start date (used to calculate totals from)</label><input type="date" id="attSetStartDate"></div>
+        <div class="field"><label>Monday–Thursday hours per day</label><input type="number" id="attSetMonThu" step="0.5" value="8"></div>
+        <div class="field"><label>Friday hours</label><input type="number" id="attSetFri" step="0.5" value="3"></div>
+        <div class="field"><label>Ramadan hours per day (Mon–Thu)</label><input type="number" id="attSetRamadan" step="0.5" value="5.5"></div>
+        <button class="btn solid" id="attSaveSettingsBtn">Save settings</button>
+      </div>
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Ramadan Periods <span style="text-transform:none; font-weight:500; font-size:11px;">(add one per year — future years never overwrite past ones)</span></h3>
+        <div id="attRamadanList"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; align-items:end;">
+          <div class="field" style="margin:0; flex:1;"><label>Start date</label><input type="date" id="attRamNewStart"></div>
+          <div class="field" style="margin:0; flex:1;"><label>End date</label><input type="date" id="attRamNewEnd"></div>
+          <button class="btn solid small" id="attAddRamadanBtn">+ Add period</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <!-- ===== end attendanceApp ===== -->
+</div>
+
+<!-- ===== edit attendance day modal ===== -->
+<div class="modal-overlay" id="editAttDayModal">
+  <div class="modal wide">
+    <h3><span id="attDayTitle">Log a day</span><span class="close-x" onclick="closeModal('editAttDayModal')">✕</span></h3>
+    <div class="field"><label>Date</label><input type="date" id="attDate"></div>
+    <div class="field"><label>Day type</label>
+      <select id="attDayType">
+        <option value="normal">Normal working day</option>
+        <option value="weekend">Weekend</option>
+        <option value="holiday">Public holiday</option>
+        <option value="sick">Sick leave</option>
+        <option value="leave">Annual leave / vacation</option>
+        <option value="off">Off (other)</option>
+      </select>
+    </div>
+    <div class="field hint" id="attExpectedHint">—</div>
+    <div class="field" id="attSessionsField">
+      <label>Sessions (check-in / check-out) — you can log attendance on any day, including weekends and holidays. Each session can have more than one task.</label>
+      <div id="attSessionsList"></div>
+      <button class="btn small" id="attAddSessionBtn" style="margin-top:8px;">+ Add session</button>
+    </div>
+    <div class="field"><label>Note (optional)</label><input type="text" id="attNote" placeholder="e.g. reason for leave"></div>
+    <div class="note-box" id="attLivePreview">Total: 0.0 hrs</div>
+    <div class="btn-row">
+      <button class="btn ghost" id="attDeleteDayBtn" style="display:none;">Delete</button>
+      <button class="btn solid" id="attSaveDayBtn" style="flex:1;">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== attendance custom range modal ===== -->
+<div class="modal-overlay" id="attCustomRangeModal">
+  <div class="modal">
+    <h3>Custom range <span class="close-x" onclick="closeModal('attCustomRangeModal')">✕</span></h3>
+    <div class="field"><label>From date</label><input type="date" id="attCustomFrom"></div>
+    <div class="field"><label>To date</label><input type="date" id="attCustomTo"></div>
+    <button class="btn solid block" id="attApplyCustomRange">Apply</button>
+  </div>
 </div>
 
 <!-- ===== range custom modal ===== -->
@@ -510,7 +681,7 @@ const GS_CLIENT_ID_DEFAULT = '425159118126-bh14caemjeug1i435rs9lpn96sidq0ot.apps
 const GS_SPREADSHEET_ID_DEFAULT = '1xHI4Cu_AyJ9ugPyqSGhQaAMfhbs6ikOB643K8HcL3d4';
 
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates})); }
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings})); }
 
 const ACCOUNT_ICONS = ['🏦','👛','💳','🐷','💰','🪙','💵','🏠','🚗','🌍','📱','💎','✈️','🎓','🏥','⛽'];
 const CATEGORY_ICONS_EXPENSE = ['🧺','🍦','☕','⛽','🏛️','👕','🎁','💊','🏋️','🧊','📱','🎮','💻','📚','⚽','🐴','🎸','👶','🏠','🚗','🎬','✈️','🎓','🤲','🍽️','🧾'];
@@ -534,6 +705,9 @@ let categories = saved ? saved.categories : [
 let tx = saved ? saved.tx : [];
 let transfers = saved ? (saved.transfers||[]) : [];
 let fxRates = saved ? (saved.fxRates||{}) : { USD:3.6725, SAR:0.9793 };
+let attDays = saved ? (saved.attDays||[]) : [];
+let attSettings = saved ? (saved.attSettings||null) : null;
+if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-06-19', ramadanPeriods:[{start:'2026-02-18', end:'2026-03-19'}] };
 if(!saved) saveLocal();
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -681,6 +855,471 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
   clearTimeout(searchDebounce);
   const val = e.target.value;
   searchDebounce = setTimeout(()=>{ searchQuery = val.trim(); renderAll(); }, 180);
+});
+
+/* ---------------- hub navigation ---------------- */
+let appView = 'hub';
+function showHub(){
+  appView='hub';
+  document.getElementById('hubScreen').style.display='block';
+  document.getElementById('financeApp').style.display='none';
+  document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Choose an app';
+  document.getElementById('brandMark').textContent='🔷';
+}
+function enterFinance(){
+  appView='finance';
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('financeApp').style.display='block';
+  document.getElementById('attendanceApp').style.display='none';
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Raseed — personal finance';
+  document.getElementById('brandMark').textContent='💰';
+  renderAll();
+}
+function enterAttendance(){
+  appView='attendance';
+  document.getElementById('hubScreen').style.display='none';
+  document.getElementById('financeApp').style.display='none';
+  document.getElementById('attendanceApp').style.display='block';
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Dawami — work attendance';
+  document.getElementById('brandMark').textContent='🕐';
+  document.getElementById('attSetMonThu').value=attSettings.monThu;
+  document.getElementById('attSetFri').value=attSettings.fri;
+  document.getElementById('attSetRamadan').value=attSettings.ramadan;
+  document.getElementById('attSetStartDate').value=attSettings.startDate||'';
+  renderRangeNavAtt(); renderAttAll();
+}
+document.getElementById('hubBtn').addEventListener('click', showHub);
+document.getElementById('hubFinanceCard').addEventListener('click', enterFinance);
+document.getElementById('hubAttendanceCard').addEventListener('click', enterAttendance);
+
+/* ---------------- attendance: time filter (mirrors the finance one, own state) ---------------- */
+let attRangeMode='month', attRangeAnchor=new Date(), attCustomFrom=null, attCustomTo=null, attSearchQuery='';
+function computeAttRange(){
+  if(attRangeMode==='custom' && attCustomFrom && attCustomTo) return {start:attCustomFrom, end:attCustomTo};
+  const d=new Date(attRangeAnchor);
+  if(attRangeMode==='day'){ const k=fmtDate(d); return {start:k,end:k}; }
+  if(attRangeMode==='week'){
+    const dow=d.getDay(); const offset=(dow-5+7)%7;
+    const s=new Date(d); s.setDate(d.getDate()-offset); const e=new Date(s); e.setDate(s.getDate()+6);
+    return {start:fmtDate(s), end:fmtDate(e)};
+  }
+  if(attRangeMode==='month'){ const s=new Date(d.getFullYear(),d.getMonth(),1); const e=new Date(d.getFullYear(),d.getMonth()+1,0); return {start:fmtDate(s), end:fmtDate(e)}; }
+  if(attRangeMode==='year'){ return {start:`${d.getFullYear()}-01-01`, end:`${d.getFullYear()}-12-31`}; }
+  return {start: attSettings.startDate || '0000-01-01', end: todayKey()};
+}
+function attRangeNavLabel(){
+  const d=new Date(attRangeAnchor);
+  if(attRangeMode==='day') return `${WEEKDAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  if(attRangeMode==='week'){ const r=computeAttRange(); const s=new Date(r.start+'T00:00:00'), e=new Date(r.end+'T00:00:00'); return `${MONTHS[s.getMonth()].slice(0,3)} ${s.getDate()} – ${MONTHS[e.getMonth()].slice(0,3)} ${e.getDate()}, ${e.getFullYear()}`; }
+  if(attRangeMode==='month') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if(attRangeMode==='year') return `${d.getFullYear()}`;
+  return '';
+}
+function attShiftRange(dir){
+  const d=new Date(attRangeAnchor);
+  if(attRangeMode==='day') d.setDate(d.getDate()+dir);
+  else if(attRangeMode==='week') d.setDate(d.getDate()+dir*7);
+  else if(attRangeMode==='month') d.setMonth(d.getMonth()+dir);
+  else if(attRangeMode==='year') d.setFullYear(d.getFullYear()+dir);
+  attRangeAnchor=d; renderRangeNavAtt(); renderAttAll();
+}
+function renderRangeNavAtt(){
+  const el=document.getElementById('attRangeNav');
+  if(['day','week','month','year'].includes(attRangeMode)){ el.style.display='flex'; document.getElementById('attRangeNavLabel').textContent=attRangeNavLabel(); }
+  else el.style.display='none';
+}
+document.getElementById('attRangeNavPrev').addEventListener('click', ()=>attShiftRange(-1));
+document.getElementById('attRangeNavNext').addEventListener('click', ()=>attShiftRange(1));
+document.querySelectorAll('.range-chip[data-att-range]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#attendanceApp .range-chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); attRangeMode=chip.dataset.attRange; attRangeAnchor=new Date();
+    document.getElementById('attRangeCustomLabel').textContent='';
+    renderRangeNavAtt(); renderAttAll();
+  });
+});
+document.getElementById('attCustomRangeChip').addEventListener('click', ()=>openModal('attCustomRangeModal'));
+document.getElementById('attApplyCustomRange').addEventListener('click', ()=>{
+  const f=document.getElementById('attCustomFrom').value, t=document.getElementById('attCustomTo').value;
+  if(!f||!t){ showToast('Pick a start and end date'); return; }
+  attCustomFrom=f; attCustomTo=t; attRangeMode='custom';
+  document.querySelectorAll('#attendanceApp .range-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('attRangeCustomLabel').textContent = `${f} → ${t}`;
+  renderRangeNavAtt(); closeModal('attCustomRangeModal'); renderAttAll();
+});
+let attSearchDebounce;
+document.getElementById('attSearchInput').addEventListener('input', (e)=>{
+  clearTimeout(attSearchDebounce);
+  const val = e.target.value;
+  attSearchDebounce = setTimeout(()=>{ attSearchQuery = val.trim().toLowerCase(); renderAttAll(); }, 180);
+});
+function matchesAttSearch(day){
+  if(!attSearchQuery) return true;
+  const q = attSearchQuery;
+  if((day.note||'').toLowerCase().includes(q)) return true;
+  return (day.sessions||[]).some(s => (s.tasks||[]).some(t =>
+    (t.task||'').toLowerCase().includes(q) || (t.assignedBy||'').toLowerCase().includes(q)
+  ));
+}
+
+/* ---------------- attendance: schedule logic ---------------- */
+function isRamadanDate(dateKey){
+  const periods = attSettings.ramadanPeriods || [];
+  return periods.some(p => p.start && p.end && dateKey >= p.start && dateKey <= p.end);
+}
+function expectedHoursFor(dateKey, dayType){
+  if(['weekend','holiday','sick','leave','off'].includes(dayType)) return 0;
+  const wd = new Date(dateKey+'T00:00:00').getDay(); // 0=Sun..6=Sat
+  const ram = isRamadanDate(dateKey);
+  if(wd>=1 && wd<=4) return ram ? attSettings.ramadan : attSettings.monThu; // Mon-Thu
+  if(wd===5) return attSettings.fri; // Friday
+  return 0; // Sat/Sun
+}
+function sessionHours(s){
+  if(!s.checkIn || !s.checkOut) return 0;
+  const [ih,im] = s.checkIn.split(':').map(Number);
+  const [oh,om] = s.checkOut.split(':').map(Number);
+  let mins = (oh*60+om) - (ih*60+im);
+  if(mins<0) mins += 24*60;
+  return Math.round((mins/60)*100)/100;
+}
+function dayActualHours(day){ return Math.round(day.sessions.reduce((s,x)=>s+sessionHours(x),0)*100)/100; }
+function dayExpectedHours(day){ return expectedHoursFor(day.date, day.dayType); }
+function dayOvertime(day){ return Math.max(0, Math.round((dayActualHours(day)-dayExpectedHours(day))*100)/100); }
+function dayShortfall(day){ return Math.max(0, Math.round((dayExpectedHours(day)-dayActualHours(day))*100)/100); }
+function getAttDay(id){ return attDays.find(d=>d.id===id); }
+
+/* Any date not explicitly logged is inferred automatically: weekends need never be
+   logged, and unlogged weekdays are still counted as required (so real gaps show up). */
+function inferDayType(dateKey){
+  const wd = new Date(dateKey+'T00:00:00').getDay();
+  return (wd===0 || wd===6) ? 'weekend' : 'normal';
+}
+function getDayInfo(dateKey){
+  const rec = attDays.find(d=>d.date===dateKey);
+  if(rec) return rec;
+  return { id:null, date:dateKey, dayType: inferDayType(dateKey), sessions:[], note:'', virtual:true };
+}
+function allDatesInRange(fromKey, toKey){
+  const out=[]; let d=new Date(fromKey+'T00:00:00'); const end=new Date(toKey+'T00:00:00');
+  while(d<=end){ out.push(fmtDate(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+
+/* ---------------- attendance: tabs ---------------- */
+let attCurrentTab='overview';
+document.getElementById('attTabbar').addEventListener('click',(e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#attTabbar button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  attCurrentTab=b.dataset.attTab;
+  ['overview','log','leaves','settings'].forEach(t=>{ document.getElementById('att-tab-'+t).style.display = (t===attCurrentTab)?'block':'none'; });
+  renderAttAll();
+});
+function renderAttAll(){
+  if(attCurrentTab==='overview') renderAttOverview();
+  else if(attCurrentTab==='log') renderAttLog();
+  else if(attCurrentTab==='leaves') renderAttLeaves();
+  else if(attCurrentTab==='settings') renderRamadanList();
+}
+
+/* ---------------- attendance: overview (sweeps the full calendar from the start date) ---------------- */
+function renderAttOverview(){
+  const now = todayKey();
+  const startDate = attSettings.startDate || now;
+  const allDates = startDate <= now ? allDatesInRange(startDate, now) : [];
+
+  // "By Month" always shows the full history, independent of the period filter — a stable macro view
+  const byMonth = {};
+  allDates.forEach(dateKey=>{
+    const d = getDayInfo(dateKey);
+    const req=dayExpectedHours(d), act=dayActualHours(d), ot=dayOvertime(d);
+    const mk=dateKey.slice(0,7);
+    if(!byMonth[mk]) byMonth[mk]={req:0,act:0,ot:0};
+    byMonth[mk].req+=req; byMonth[mk].act+=act; byMonth[mk].ot+=ot;
+  });
+  const mb = document.getElementById('attMonthBars'); mb.innerHTML='';
+  const months = Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  if(!months.length){ mb.innerHTML='<div class="empty-hint">Set an employment start date in Schedule Settings to see monthly totals</div>'; }
+  const maxReq = Math.max(1, ...months.map(m=>Math.max(byMonth[m].req, byMonth[m].act)));
+  months.forEach(m=>{
+    const v = byMonth[m];
+    const pct = Math.max(2, Math.round((v.act/maxReq)*100));
+    const row = document.createElement('div'); row.className='acct-bar-row'; row.style.marginBottom='12px';
+    row.innerHTML = `<div class="acct-bar-top"><div class="an">${monthLabel(m)}</div><div class="av">${v.act.toFixed(1)} / ${v.req.toFixed(1)} hrs ${v.ot>0?`(+${v.ot.toFixed(1)} OT)`:''}</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%;"></div></div>`;
+    mb.appendChild(row);
+  });
+
+  // hero card + breakdown + recent: honor the selected period filter
+  const r = computeAttRange();
+  const filterStart = r.start < startDate ? startDate : r.start;
+  const filterEnd = r.end > now ? now : r.end;
+  const periodDates = filterStart <= filterEnd ? allDatesInRange(filterStart, filterEnd) : [];
+  let pReq=0, pAct=0, pOt=0;
+  const periodDays = [];
+  periodDates.forEach(dateKey=>{
+    const d = getDayInfo(dateKey);
+    if(attSearchQuery && !matchesAttSearch(d)) return;
+    pReq+=dayExpectedHours(d); pAct+=dayActualHours(d); pOt+=dayOvertime(d);
+    if(d.sessions.length || d.dayType!=='normal') periodDays.push(d);
+  });
+  document.getElementById('attOtBalance').innerHTML = `<span class="cur">hrs</span>${pOt.toFixed(1)}`;
+  document.getElementById('attReqYtd').textContent = pReq.toFixed(1)+' hrs';
+  document.getElementById('attActYtd').textContent = pAct.toFixed(1)+' hrs';
+
+  renderAttBreakdown(periodDays);
+
+  const rel = document.getElementById('attRecent');
+  const recent = [...periodDays].filter(d=>!d.virtual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  rel.innerHTML = recent.length ? '' : '<div class="empty-hint">No entries in this period</div>';
+  recent.forEach(d=>{
+    const act=dayActualHours(d), req=dayExpectedHours(d), ot=dayOvertime(d);
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML = `<div class="list-icon">🕐</div><div class="ltxt"><div class="ln1">${d.date} <span class="badge ${d.dayType}">${d.dayType}</span></div><div class="ln2">${act}h worked${ot>0?` · +${ot}h OT`:''}${d.note?' · '+d.note:''}</div></div><div class="lval">${act}/${req}h</div>`;
+    rel.appendChild(row);
+  });
+}
+
+let attBreakdownMode='workType';
+document.getElementById('attBreakdownTabs').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  attBreakdownMode=b.dataset.bd; renderAttOverview();
+});
+function renderAttBreakdown(days){
+  const el = document.getElementById('attBreakdown');
+  const sums = {};
+  days.forEach(d=>{
+    d.sessions.forEach(s=>{
+      const h = sessionHours(s);
+      if(attBreakdownMode==='workType'){
+        const key = s.workType||'Online';
+        sums[key]=(sums[key]||0)+h;
+      } else {
+        (s.tasks||[]).forEach(t=>{
+          const key = t.assignedBy || 'Unassigned';
+          sums[key]=(sums[key]||0)+ h/((s.tasks||[]).length||1);
+        });
+      }
+    });
+  });
+  const entries = Object.entries(sums).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const total = entries.reduce((s,[,v])=>s+v,0) || 1;
+  if(!entries.length){ el.innerHTML = '<div class="empty-hint">No sessions in this period</div>'; return; }
+  el.innerHTML='';
+  entries.forEach(([label,val])=>{
+    const pct = Math.round((val/total)*100);
+    const row=document.createElement('div'); row.style.marginBottom='10px';
+    row.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;"><span>${label}</span><span style="color:var(--text-dim);">${val.toFixed(1)}h · ${pct}%</span></div>
+      <div class="bar-cell"><div class="bar-fill" style="width:${pct}%; background:var(--gold);"></div></div>`;
+    el.appendChild(row);
+  });
+}
+
+/* ---------------- attendance: daily log (only real logged entries — no clutter) ---------------- */
+function renderAttLog(){
+  const el = document.getElementById('attLogView');
+  const r = computeAttRange();
+  const workDays = attDays.filter(d=>d.sessions && d.sessions.length && d.date>=r.start && d.date<=r.end && matchesAttSearch(d));
+  if(!workDays.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No work days logged in this period</div></div>'; return; }
+  const groups={};
+  workDays.forEach(d=>{ const mk=d.date.slice(0,7); (groups[mk]=groups[mk]||[]).push(d); });
+
+  const months = Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  el.innerHTML='';
+  months.forEach(mk=>{
+    const days = groups[mk].sort((a,b)=>b.date.localeCompare(a.date));
+    const monReq = days.reduce((s,d)=>s+dayExpectedHours(d),0);
+    const monAct = days.reduce((s,d)=>s+dayActualHours(d),0);
+    const head=document.createElement('div'); head.className='group-head'; head.style.cursor='default';
+    head.innerHTML = `<div class="gh-l">${monthLabel(mk)}</div><div class="gh-r"><span class="gh-count">${days.length} day${days.length>1?'s':''}</span><span class="gh-total pos">${monAct.toFixed(1)} / ${monReq.toFixed(1)} hrs</span></div>`;
+    el.appendChild(head);
+    const body=document.createElement('div'); body.className='group-body';
+    days.forEach(d=>{
+      const act=dayActualHours(d), req=dayExpectedHours(d), ot=dayOvertime(d);
+      const taskSummary = d.sessions.flatMap(s=>s.tasks||[]).map(t=>t.task).filter(Boolean).join(', ');
+      const row=document.createElement('div'); row.className='tx-row';
+      row.innerHTML = `<div class="tx-icon">🕐</div>
+        <div class="tx-info"><div class="tn">${d.date} <span class="badge ${d.dayType}">${d.dayType}</span></div>
+        <div class="ts">${taskSummary || d.sessions.length+' session(s)'}</div></div>
+        <div class="tx-amt ${ot>0?'income':''}">${act}/${req}h${ot>0?` +${ot}OT`:''}</div>
+        <div class="tx-actions"><span data-edit="${d.id}">✎</span><span data-del="${d.id}">✕</span></div>`;
+      body.appendChild(row);
+    });
+    el.appendChild(body);
+  });
+  el.querySelectorAll('[data-del]').forEach(b=>{ b.addEventListener('click', ()=>{ attDays=attDays.filter(x=>x.id!==b.dataset.del); persist(); renderAttAll(); }); });
+  el.querySelectorAll('[data-edit]').forEach(b=>{ b.addEventListener('click', ()=>{ openEditAttDay(getAttDay(b.dataset.edit)); }); });
+}
+
+/* ---------------- attendance: leaves & holidays ---------------- */
+function renderAttLeaves(){
+  const el = document.getElementById('attLeavesView');
+  const r = computeAttRange();
+  const leaves = attDays.filter(d=>['holiday','sick','leave','off'].includes(d.dayType) && d.date>=r.start && d.date<=r.end && matchesAttSearch(d)).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!leaves.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No leaves or holidays in this period</div></div>'; return; }
+  const card = document.createElement('div'); card.className='card';
+  leaves.forEach(d=>{
+    const row=document.createElement('div'); row.className='list-row';
+    row.innerHTML=`<div class="list-icon">📌</div><div class="ltxt"><div class="ln1">${d.date} <span class="badge ${d.dayType}">${d.dayType}</span></div><div class="ln2">${d.note||'—'}</div></div><div class="lval" style="color:var(--text-dim); font-size:14px;">✎</div>`;
+    row.addEventListener('click', ()=>openEditAttDay(d));
+    card.appendChild(row);
+  });
+  el.innerHTML=''; el.appendChild(card);
+}
+document.getElementById('addAttLeaveBtn').addEventListener('click', ()=>{
+  openEditAttDay(null);
+  document.getElementById('attDayType').value='holiday';
+  document.getElementById('attSessionsField').style.display='none';
+  attSessionsDraft=[];
+  updateAttExpectedHint();
+});
+
+/* ---------------- attendance: edit/add day modal ---------------- */
+let editingAttDayId=null, attSessionsDraft=[];
+function openEditAttDay(existing){
+  editingAttDayId = existing ? existing.id : null;
+  document.getElementById('attDayTitle').textContent = existing ? 'Edit day' : 'Log a day';
+  document.getElementById('attDate').value = existing ? existing.date : todayKey();
+  document.getElementById('attDayType').value = existing ? existing.dayType : 'normal';
+  document.getElementById('attNote').value = existing ? (existing.note||'') : '';
+  document.getElementById('attSessionsField').style.display='block';
+  attSessionsDraft = existing ? JSON.parse(JSON.stringify(existing.sessions)) : [{checkIn:'09:00', checkOut:'17:00', workType:'Online', tasks:[{task:'',assignedBy:''}]}];
+  document.getElementById('attDeleteDayBtn').style.display = existing ? 'inline-flex':'none';
+  renderAttSessionsDraft();
+  updateAttExpectedHint();
+  openModal('editAttDayModal');
+}
+document.getElementById('addAttDayBtn').addEventListener('click', ()=>openEditAttDay(null));
+document.getElementById('attDate').addEventListener('change', updateAttExpectedHint);
+document.getElementById('attDayType').addEventListener('change', updateAttExpectedHint);
+function updateAttExpectedHint(){
+  const date = document.getElementById('attDate').value;
+  const dayType = document.getElementById('attDayType').value;
+  const exp = expectedHoursFor(date, dayType);
+  const ram = isRamadanDate(date);
+  document.getElementById('attExpectedHint').textContent = `Expected: ${exp} hrs${ram?' (Ramadan schedule)':''} — you can still log sessions even if expected is 0; extra hours count as overtime.`;
+}
+
+/* sessions can each hold more than one task */
+function renderAttSessionsDraft(){
+  const el = document.getElementById('attSessionsList'); el.innerHTML='';
+  attSessionsDraft.forEach((s,i)=>{
+    if(!s.tasks || !s.tasks.length) s.tasks=[{task:'',assignedBy:''}];
+    const wrap = document.createElement('div'); wrap.style.cssText='background:var(--surface-2); border-radius:12px; padding:10px; margin-bottom:10px;';
+    const top = document.createElement('div'); top.className='att-session-row'; top.style.marginBottom='6px';
+    top.innerHTML = `
+      <div><label>Check-in</label><input type="time" value="${s.checkIn||''}" data-sf="checkIn" data-si="${i}"></div>
+      <div><label>Check-out</label><input type="time" value="${s.checkOut||''}" data-sf="checkOut" data-si="${i}"></div>
+      <div><label>Type</label><select data-sf="workType" data-si="${i}">
+        <option ${s.workType==='Online'?'selected':''}>Online</option>
+        <option ${s.workType==='Office'?'selected':''}>Office</option>
+        <option ${s.workType==='Field'?'selected':''}>Field</option>
+      </select></div>
+      <div></div><div></div>
+      <span class="rm" data-rms="${i}">✕ session</span>`;
+    wrap.appendChild(top);
+    const tasksBox = document.createElement('div'); tasksBox.id='attTasksBox'+i;
+    s.tasks.forEach((tk,ti)=>{
+      const trow = document.createElement('div'); trow.className='att-session-row'; trow.style.gridTemplateColumns='1.6fr 1.2fr auto'; trow.style.marginBottom='6px';
+      trow.innerHTML = `
+        <div><label>Task</label><input type="text" value="${tk.task||''}" data-tf="task" data-si="${i}" data-ti="${ti}" placeholder="What did you work on?"></div>
+        <div><label>Assigned by</label><input type="text" value="${tk.assignedBy||''}" data-tf="assignedBy" data-si="${i}" data-ti="${ti}"></div>
+        <span class="rm" data-rmt="${i}:${ti}">✕</span>`;
+      tasksBox.appendChild(trow);
+    });
+    wrap.appendChild(tasksBox);
+    const addTaskBtn = document.createElement('button'); addTaskBtn.className='btn small ghost'; addTaskBtn.textContent='+ Add another task to this session'; addTaskBtn.type='button';
+    addTaskBtn.addEventListener('click', ()=>{ s.tasks.push({task:'',assignedBy:''}); renderAttSessionsDraft(); });
+    wrap.appendChild(addTaskBtn);
+    el.appendChild(wrap);
+  });
+  el.querySelectorAll('[data-sf]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ attSessionsDraft[parseInt(inp.dataset.si)][inp.dataset.sf]=inp.value; updateAttLivePreview(); });
+  });
+  el.querySelectorAll('[data-tf]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ attSessionsDraft[parseInt(inp.dataset.si)].tasks[parseInt(inp.dataset.ti)][inp.dataset.tf]=inp.value; });
+  });
+  el.querySelectorAll('[data-rms]').forEach(b=>{
+    b.addEventListener('click', ()=>{ attSessionsDraft.splice(parseInt(b.dataset.rms),1); renderAttSessionsDraft(); updateAttLivePreview(); });
+  });
+  el.querySelectorAll('[data-rmt]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const [si,ti] = b.dataset.rmt.split(':').map(Number);
+      if(attSessionsDraft[si].tasks.length>1) attSessionsDraft[si].tasks.splice(ti,1);
+      renderAttSessionsDraft();
+    });
+  });
+  updateAttLivePreview();
+}
+document.getElementById('attAddSessionBtn').addEventListener('click', ()=>{
+  attSessionsDraft.push({checkIn:'09:00', checkOut:'17:00', workType:'Online', tasks:[{task:'',assignedBy:''}]});
+  renderAttSessionsDraft();
+});
+function updateAttLivePreview(){
+  const total = attSessionsDraft.reduce((s,x)=>s+sessionHours(x),0);
+  document.getElementById('attLivePreview').textContent = `Total: ${total.toFixed(2)} hrs`;
+}
+document.getElementById('attSaveDayBtn').addEventListener('click', ()=>{
+  const date = document.getElementById('attDate').value;
+  if(!date){ showToast('Pick a date'); return; }
+  const dayType = document.getElementById('attDayType').value;
+  const note = document.getElementById('attNote').value.trim();
+  const cleanSessions = attSessionsDraft.filter(s=>s.checkIn && s.checkOut).map(s=>({...s, tasks:(s.tasks||[]).filter(t=>t.task||t.assignedBy)}));
+  const payload = { date, dayType, note, sessions: cleanSessions };
+  if(editingAttDayId){ Object.assign(getAttDay(editingAttDayId), payload); }
+  else {
+    const existingSameDate = attDays.find(d=>d.date===date);
+    if(existingSameDate){ Object.assign(existingSameDate, payload); }
+    else attDays.push({ id:'d'+Date.now(), ...payload });
+  }
+  persist(); closeModal('editAttDayModal'); renderAttAll(); showToast('Saved');
+});
+document.getElementById('attDeleteDayBtn').addEventListener('click', ()=>{
+  if(!editingAttDayId) return;
+  attDays = attDays.filter(x=>x.id!==editingAttDayId);
+  persist(); closeModal('editAttDayModal'); renderAttAll(); showToast('Deleted');
+});
+
+/* ---------------- attendance: schedule settings ---------------- */
+document.getElementById('attSaveSettingsBtn').addEventListener('click', ()=>{
+  attSettings.monThu = parseFloat(document.getElementById('attSetMonThu').value)||8;
+  attSettings.fri = parseFloat(document.getElementById('attSetFri').value)||3;
+  attSettings.ramadan = parseFloat(document.getElementById('attSetRamadan').value)||5.5;
+  attSettings.startDate = document.getElementById('attSetStartDate').value||'';
+  persist(); renderAttAll(); showToast('Settings saved');
+});
+
+/* Ramadan periods — a list, so each year is added independently and never overwrites another */
+function renderRamadanList(){
+  const el = document.getElementById('attRamadanList');
+  const periods = attSettings.ramadanPeriods || [];
+  if(!periods.length){ el.innerHTML='<div class="empty-hint">No Ramadan periods added yet</div>'; return; }
+  el.innerHTML='';
+  periods.forEach((p,i)=>{
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML=`<div class="list-icon">🌙</div><div class="ltxt"><div class="ln1">${p.start} → ${p.end}</div></div><div class="lval" data-rmram="${i}" style="color:var(--expense-soft); cursor:pointer;">✕</div>`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('[data-rmram]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      attSettings.ramadanPeriods.splice(parseInt(b.dataset.rmram),1);
+      persist(); renderRamadanList();
+    });
+  });
+}
+document.getElementById('attAddRamadanBtn').addEventListener('click', ()=>{
+  const s = document.getElementById('attRamNewStart').value, e = document.getElementById('attRamNewEnd').value;
+  if(!s || !e){ showToast('Pick both a start and end date'); return; }
+  if(!attSettings.ramadanPeriods) attSettings.ramadanPeriods=[];
+  attSettings.ramadanPeriods.push({start:s, end:e});
+  attSettings.ramadanPeriods.sort((a,b)=>a.start.localeCompare(b.start));
+  document.getElementById('attRamNewStart').value=''; document.getElementById('attRamNewEnd').value='';
+  persist(); renderRamadanList(); showToast('Ramadan period added');
 });
 
 /* ---------------- tabs ---------------- */
@@ -1249,6 +1888,10 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transfers), 'Transfers');
   const ratesRows = Object.entries(fxRates).map(([currency,rate])=>({currency,rate}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ratesRows), 'Rates');
+  const attRows = attDays.map(d=>({id:d.id, date:d.date, dayType:d.dayType, sessionsJson:JSON.stringify(d.sessions)}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attRows), 'AttendanceDays');
+  const settingsRows = Object.entries(attSettings).map(([key,value])=>({key, value: (key==='ramadanPeriods') ? JSON.stringify(value) : value}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(settingsRows), 'AttendanceSettings');
   return wb;
 }
 function stateFromWorkbook(wb){
@@ -1261,6 +1904,11 @@ function stateFromWorkbook(wb){
   accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; });
   tx.forEach(t=>{ t.amount=parseFloat(t.amount)||0; });
   transfers.forEach(t=>{ t.amount=parseFloat(t.amount)||0; t.toAmount=parseFloat(t.toAmount)||t.amount; t.rate=parseFloat(t.rate)||1; });
+  attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
+  if(wb.Sheets['AttendanceSettings']){
+    const s = {}; XLSX.utils.sheet_to_json(wb.Sheets['AttendanceSettings']).forEach(r=>{ s[r.key]=r.value; });
+    attSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'', ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })() };
+  }
 }
 async function writeToLinkedFile(){
   try{
@@ -1331,7 +1979,7 @@ document.getElementById('excelFileInput').addEventListener('change', (e)=>{
 });
 
 document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-  const backup={accounts, categories, tx, transfers, fxRates, exportedAt:new Date().toISOString()};
+  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=`raseed-backup-${todayKey()}.json`;
@@ -1347,7 +1995,8 @@ document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
       const data=JSON.parse(reader.result);
       if(data.accounts) accounts=data.accounts; if(data.categories) categories=data.categories;
       if(data.tx) tx=data.tx; if(data.transfers) transfers=data.transfers; if(data.fxRates) fxRates=data.fxRates;
-      persist(); closeModal('storageModal'); renderAll(); showToast('Imported');
+      if(data.attDays) attDays=data.attDays; if(data.attSettings) attSettings=data.attSettings;
+      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); showToast('Imported');
     } catch(err){ showToast('Invalid file'); }
   };
   reader.readAsText(file);
@@ -1361,13 +2010,15 @@ let gsSpreadsheetId = localStorage.getItem(GS_LS.sheetId) || GS_SPREADSHEET_ID_D
 document.getElementById('gsClientId').value = gsClientId;
 document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
-const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates'];
+const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings'];
 const GS_HEADERS = {
   Accounts: ['id','name','currency','balance','date','included','icon'],
   Categories: ['id','name','icon','type'],
   Transactions: ['id','type','accountId','categoryId','amount','currency','date','note'],
   Transfers: ['id','accountId','toAccountId','amount','currency','toAmount','toCurrency','rate','date','note'],
-  Rates: ['currency','rate']
+  Rates: ['currency','rate'],
+  AttendanceDays: ['id','date','dayType','sessionsJson'],
+  AttendanceSettings: ['key','value']
 };
 function gsRowsFromState(){
   return {
@@ -1375,7 +2026,9 @@ function gsRowsFromState(){
     Categories: [GS_HEADERS.Categories, ...categories.map(c=>[c.id,c.name,c.icon,c.type])],
     Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||''])],
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
-    Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])]
+    Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])],
+    AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,JSON.stringify(d.sessions)])],
+    AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods') ? JSON.stringify(v) : v])]
   };
 }
 function gsObjectsFromRows(rows){
@@ -1419,7 +2072,7 @@ async function gsPush(){
       method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
       body: JSON.stringify({ valueInputOption:'RAW', data: SHEETS_TABS.map(t=>({range:t+'!A1', values: rows[t]})) })
     });
-    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates});
+    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings});
   }catch(err){ console.error(err); showToast('Could not sync with Google Sheets — data kept locally'); }
 }
 async function gsPull(silent){
@@ -1429,20 +2082,24 @@ async function gsPull(silent){
     const res = await fetch(url, { headers:{Authorization:'Bearer '+gsAccessToken} });
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
-    const [accVR, catVR, txVR, trVR, rtVR] = data.valueRanges;
+    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE'}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0}));
     const newTransfers = gsObjectsFromRows(trVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, toAmount:parseFloat(t.toAmount)||0, rate:parseFloat(t.rate)||1}));
     const newRates = {}; gsObjectsFromRows(rtVR.values).forEach(r=>{ if(r.currency) newRates[r.currency]=parseFloat(r.rate)||0; });
-    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates});
+    const newAttDays = gsObjectsFromRows(adVR.values).map(r=>({ id:r.id, date:r.date, dayType:r.dayType, sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() }));
+    let newAttSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'', ramadanPeriods:[] };
+    const asRows = gsObjectsFromRows(asVR.values); if(asRows.length){ const s={}; asRows.forEach(r=>{ s[r.key]=r.value; }); newAttSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'', ramadanPeriods: (()=>{ try{ return JSON.parse(s.ramadanPeriods||'[]'); }catch(e){ return []; } })() }; }
+    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
-    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates;
+    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings;
     gsLastSnapshot = incomingSnapshot;
     saveLocal();
     if(!silent) showToast('Pulled latest version from the sheet');
     renderAcctFilterSelect(); renderAll();
+    if(appView==='attendance') renderAttAll();
   }catch(err){ console.error(err); if(!silent) showToast('Could not pull from Google Sheets'); }
 }
 function startGsPolling(){ clearInterval(gsPollTimer); gsPollTimer = setInterval(()=>{ if(gsAccessToken) gsPull(true); }, 45000); }
@@ -1460,7 +2117,7 @@ function openGate(){
   document.getElementById('gateSignInBtn').style.display = configured ? 'block' : 'none';
   document.getElementById('gateOverlay').classList.add('open');
 }
-function closeGate(){ document.getElementById('gateOverlay').classList.remove('open'); }
+function closeGate(){ document.getElementById('gateOverlay').classList.remove('open'); if(appView==='hub') showHub(); }
 document.getElementById('gateSkipBtn').addEventListener('click', closeGate);
 document.getElementById('gateSetupBtn').addEventListener('click', ()=>{ closeGate(); renderRatesList(); openModal('storageModal'); });
 document.getElementById('gateSignInBtn').addEventListener('click', ()=>{
