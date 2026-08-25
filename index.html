@@ -2950,23 +2950,35 @@ function initGis(){
     callback: async (resp)=>{
       if(resp.error){ showToast('Could not sign in to Google'); return; }
       gsAccessToken = resp.access_token;
-      await gsEnsureTabsExist(); await gsPull(true); gsUpdateStatus(true); startGsPolling();
-      showToast('Connected to Google Sheets');
+      // Let the person into the app immediately — never let a sync hiccup strand them on the sign-in screen.
+      gsUpdateStatus(true);
+      startGsPolling();
+      showToast('Signed in — syncing with Google Sheets…');
+      try{
+        await gsEnsureTabsExist();
+        await gsPull(true);
+        showToast('Connected to Google Sheets');
+      }catch(err){
+        console.error(err);
+        showToast('Signed in, but the initial sync failed — it will retry automatically. Your local data is safe.');
+      }
     }
   });
 }
 async function gsEnsureTabsExist(){
-  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${gsSpreadsheetId}?fields=sheets.properties.title`, { headers:{Authorization:'Bearer '+gsAccessToken} });
-  if(!res.ok) return;
-  const data = await res.json();
-  const existing = (data.sheets||[]).map(s=>s.properties.title);
-  const missing = SHEETS_TABS.filter(t=>!existing.includes(t));
-  if(missing.length){
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${gsSpreadsheetId}:batchUpdate`, {
-      method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
-      body: JSON.stringify({ requests: missing.map(t=>({addSheet:{properties:{title:t}}})) })
-    });
-  }
+  try{
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${gsSpreadsheetId}?fields=sheets.properties.title`, { headers:{Authorization:'Bearer '+gsAccessToken} });
+    if(!res.ok) return;
+    const data = await res.json();
+    const existing = (data.sheets||[]).map(s=>s.properties.title);
+    const missing = SHEETS_TABS.filter(t=>!existing.includes(t));
+    if(missing.length){
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${gsSpreadsheetId}:batchUpdate`, {
+        method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
+        body: JSON.stringify({ requests: missing.map(t=>({addSheet:{properties:{title:t}}})) })
+      });
+    }
+  }catch(err){ console.error(err); /* non-fatal — gsPull/gsPush will still try, and local data keeps working */ }
 }
 async function gsPush(){
   if(!gsAccessToken || !gsSpreadsheetId) return;
