@@ -615,7 +615,7 @@ table.rtable{width:100%; border-collapse:collapse;}
         </div>
         <div>
           <div class="panel">
-            <h3>Due This Month <span id="aqDueBadge" class="badge off" style="text-transform:none;"></span></h3>
+            <h3><span id="aqDueLabel">Due This Month</span> <span id="aqDueBadge" class="badge off" style="text-transform:none;"></span></h3>
             <div id="aqDueThisMonth"></div>
           </div>
           <div class="panel">
@@ -2595,19 +2595,25 @@ function renderAqOverview(){
     barsEl.appendChild(row);
   });
 
-  const now = todayKey(); const monthKey = now.slice(0,7);
-  const dueThisMonth = [];
-  const overdue = [];
+  const r = computeAqRange();
+  const now = todayKey();
+  const dueInRange = [];
+  const overdueInRange = [];
   plans.forEach(p=>{
-    (p.schedule||[]).forEach((r,idx)=>{
-      if(r.paid) return;
-      if(r.date < now) overdue.push({plan:p, row:r, idx});
-      else if(r.date.startsWith(monthKey)) dueThisMonth.push({plan:p, row:r, idx});
+    (p.schedule||[]).forEach((row,idx)=>{
+      if(row.paid) return;
+      if(row.date < r.start || row.date > r.end) return; // outside the selected period
+      if(row.date < now) overdueInRange.push({plan:p, row, idx});
+      else dueInRange.push({plan:p, row, idx});
     });
   });
-  dueThisMonth.sort((a,b)=>a.row.date.localeCompare(b.row.date));
-  overdue.sort((a,b)=>a.row.date.localeCompare(b.row.date));
-  document.getElementById('aqDueBadge').textContent = dueThisMonth.length ? dueThisMonth.length+' due' : '';
+  dueInRange.sort((a,b)=>a.row.date.localeCompare(b.row.date));
+  overdueInRange.sort((a,b)=>a.row.date.localeCompare(b.row.date));
+  document.getElementById('aqDueBadge').textContent = dueInRange.length ? dueInRange.length+' due' : '';
+  document.getElementById('aqDueLabel').textContent = aqRangeMode==='month' ? `Due in ${aqRangeNavLabel()}`
+    : aqRangeMode==='year' ? `Due in ${aqRangeNavLabel()}`
+    : aqRangeMode==='custom' ? 'Due in Selected Range'
+    : 'Due (Upcoming)';
 
   function renderQuickList(elId, items, overdueStyle){
     const el = document.getElementById(elId);
@@ -2625,8 +2631,8 @@ function renderAqOverview(){
       el.appendChild(rowEl);
     });
   }
-  renderQuickList('aqDueThisMonth', dueThisMonth, false);
-  renderQuickList('aqOverdue', overdue, true);
+  renderQuickList('aqDueThisMonth', dueInRange, false);
+  renderQuickList('aqOverdue', overdueInRange, true);
 }
 
 /* ---------------- aqsati: plans tab ---------------- */
