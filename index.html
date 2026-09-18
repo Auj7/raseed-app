@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0E1412">
+<meta name="theme-color" content="#0A1220">
 <title>AUJ — Raseed &amp; Dawami</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,34 +22,34 @@
    ============================================================ */
 
 :root{
-  /* --- ledger cloth --- */
-  --bg:#0E1412;
-  --surface:#151D19;
-  --surface-2:#1C2620;
-  --surface-3:#25312B;
-  --border:#2A3630;
-  --border-soft:#212C27;
+  /* --- ledger cloth (blue) --- */
+  --bg:#0A1220;
+  --surface:#111B2C;
+  --surface-2:#16233A;
+  --surface-3:#1E304A;
+  --border:#26395A;
+  --border-soft:#1C2C46;
 
   /* --- ink --- */
-  --text:#ECEAE1;
-  --text-dim:#98A69E;
-  --text-dim2:#6B7872;
+  --text:#ECEEF4;
+  --text-dim:#93A5C2;
+  --text-dim2:#6B7C99;
 
-  /* --- house accent: brass. Never overridden, so every button,
+  /* --- house accent: blue. Never overridden, so every button,
          in-page or in-modal, is exactly the same colour. --- */
-  --brass:#C9A227;
-  --brass-soft:#E8CE7B;
-  --on-brass:#1B1406;
+  --brass:#2F7DE0;
+  --brass-soft:#8FC3FF;
+  --on-brass:#071630;
 
   /* --- channel accent: re-declared per app further down.
          The JS writes `background:var(--gold)` into its bar
          charts, so those follow the app automatically. --- */
-  --gold:#C9A227;
-  --gold-soft:#E8CE7B;
-  --gold-tint:rgba(201,162,39,.14);
-  --gold-tint2:rgba(201,162,39,.28);
+  --gold:#2F7DE0;
+  --gold-soft:#8FC3FF;
+  --gold-tint:rgba(47,125,224,.14);
+  --gold-tint2:rgba(47,125,224,.30);
 
-  --teal-soft:#7FAE9C;
+  --teal-soft:#7FAAD9;
   --income:#5FB489;  --income-soft:#8FD3AE;
   --expense:#C4574A; --expense-soft:#E08A7D;
 
@@ -64,10 +64,11 @@
 
 /* channel accents — drawn from the same family as the chart
    palette in the script, so nothing ever clashes */
-#financeApp   { --gold:#C9A227; --gold-soft:#E8CE7B; --gold-tint:rgba(201,162,39,.14); --gold-tint2:rgba(201,162,39,.28); }
-#attendanceApp{ --gold:#6FAE9A; --gold-soft:#A8D2C4; --gold-tint:rgba(111,174,154,.14); --gold-tint2:rgba(111,174,154,.28); }
-#kafalatApp   { --gold:#9CA6C4; --gold-soft:#C5CCDE; --gold-tint:rgba(156,166,196,.16); --gold-tint2:rgba(156,166,196,.30); }
-#aqsatiApp    { --gold:#D08A73; --gold-soft:#EAB6A4; --gold-tint:rgba(208,138,115,.14); --gold-tint2:rgba(208,138,115,.28); }
+#financeApp   { --gold:#2F7DE0; --gold-soft:#8FC3FF; --gold-tint:rgba(47,125,224,.14); --gold-tint2:rgba(47,125,224,.30); }
+#attendanceApp{ --gold:#4FA3D8; --gold-soft:#A9D9F5; --gold-tint:rgba(79,163,216,.14); --gold-tint2:rgba(79,163,216,.30); }
+#kafalatApp   { --gold:#6C87D8; --gold-soft:#B7C4EF; --gold-tint:rgba(108,135,216,.16); --gold-tint2:rgba(108,135,216,.32); }
+#aqsatiApp    { --gold:#3FA7A0; --gold-soft:#9FDCD6; --gold-tint:rgba(63,167,160,.14); --gold-tint2:rgba(63,167,160,.30); }
+#masariApp    { --gold:#6C87D8; --gold-soft:#B7C4EF; --gold-tint:rgba(108,135,216,.14); --gold-tint2:rgba(108,135,216,.30); }
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -79,8 +80,8 @@ body{
   -webkit-font-smoothing:antialiased;
   background:var(--bg);
   background-image:
-    radial-gradient(1100px 620px at 12% -12%, rgba(201,162,39,.055), transparent 62%),
-    radial-gradient(900px 520px at 102% -4%, rgba(111,174,154,.042), transparent 58%);
+    radial-gradient(1100px 620px at 12% -12%, rgba(47,125,224,.065), transparent 62%),
+    radial-gradient(900px 520px at 102% -4%, rgba(79,163,216,.05), transparent 58%);
   background-attachment:fixed;
 }
 a{color:var(--gold-soft); text-decoration-color:var(--border);}
@@ -186,6 +187,21 @@ header{display:flex; align-items:center; justify-content:space-between; gap:16px
   transition:border-color .14s var(--ease);
 }
 .mini-select:hover{border-color:var(--surface-3);}
+.multiselect{position:relative; display:inline-block;}
+.ms-btn{display:inline-flex; align-items:center; gap:6px; text-align:left;}
+.ms-btn::after{content:''; display:inline-block; width:8px; height:8px; margin-left:2px; border-right:1.5px solid var(--text-dim); border-bottom:1.5px solid var(--text-dim); transform:translateY(-2px) rotate(45deg);}
+.ms-panel{
+  position:absolute; top:calc(100% + 6px); left:0; z-index:40; min-width:220px; max-height:280px; overflow-y:auto;
+  background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:6px;
+  box-shadow:0 20px 44px -20px rgba(0,0,0,.9); display:none;
+}
+.ms-panel.open{display:block;}
+.ms-actions{display:flex; justify-content:space-between; padding:5px 8px 8px; margin-bottom:4px; border-bottom:1px solid var(--border-soft); font-size:11px; color:var(--gold-soft); cursor:pointer;}
+.ms-actions span:hover{text-decoration:underline;}
+.ms-opt{display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:8px; cursor:pointer; font-size:12.5px; color:var(--text);}
+.ms-opt:hover{background:var(--surface-3);}
+.ms-opt input{margin:0; width:14px; height:14px; accent-color:var(--brass); cursor:pointer;}
+.ms-empty{padding:10px 8px; font-size:12px; color:var(--text-dim2);}
 .filter-chip-active{
   display:inline-flex; align-items:center; gap:6px; background:var(--gold-tint); border:1px solid var(--gold-tint2);
   color:var(--gold-soft); border-radius:20px; padding:5px 12px; font-size:12px; cursor:pointer;
@@ -367,7 +383,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .btn:hover{background:var(--surface-3); border-color:rgba(232,206,123,.42);}
 .btn:active{transform:scale(.98);}
 .btn.solid{
-  background:var(--brass); color:var(--on-brass); border:1px solid #B08D1E;
+  background:var(--brass); color:var(--on-brass); border:1px solid #1E5FBE;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
 }
 .btn.solid:hover{background:var(--brass-soft); border-color:var(--brass-soft);}
@@ -430,7 +446,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .keypad .save-row{grid-column:1/5;}
 .keypad .save-row button{
   width:100%; background:var(--brass); color:var(--on-brass); font-weight:700; padding:14px 0; font-size:14px;
-  border:1px solid #B08D1E; box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+  border:1px solid #1E5FBE; box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
 }
 .keypad .save-row button:hover{background:var(--brass-soft);}
 
@@ -451,7 +467,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .gate-card h2{font-family:var(--font-fig); font-weight:400; font-size:26px; margin:0 0 10px;}
 .gate-card p{font-size:12.5px; color:var(--text-dim); line-height:1.85; margin:0 0 22px;}
 .gate-card .gsignin{
-  background:var(--brass); color:var(--on-brass); border:1px solid #B08D1E; border-radius:12px;
+  background:var(--brass); color:var(--on-brass); border:1px solid #1E5FBE; border-radius:12px;
   padding:13px 20px; font-family:var(--font-ui); font-weight:700; font-size:14px; cursor:pointer; width:100%;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3); transition:background .14s var(--ease);
 }
@@ -523,14 +539,31 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .hub-card .hc-name{font-family:var(--font-fig); font-size:24px; line-height:1.15; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
 .hub-card .hc-name em{font-style:normal; font-family:var(--font-ui); font-size:14px; color:var(--gold-soft); font-weight:500;}
 .hub-card .hc-desc{font-size:12.5px; color:var(--text-dim); margin-top:4px;}
+.hc-stats{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px;}
+.hc-stat-pill{font-size:11px; padding:4px 10px; border-radius:20px; background:var(--surface-2); border:1px solid var(--border-soft); color:var(--text-dim); white-space:nowrap; line-height:1.3;}
+.hc-stat-pill b{color:var(--gold-soft); font-weight:600;}
+.hc-stat-pill.warn b{color:var(--expense-soft);}
+.ms-cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.ms-cal-dow{font-size:11px; color:var(--text-dim2); text-align:center; padding-bottom:4px; font-weight:600;}
+.ms-cal-cell{border:1px solid var(--border-soft); border-radius:10px; background:var(--surface-2); padding:6px 6px 8px; min-height:74px; display:flex; flex-direction:column; gap:4px; cursor:pointer; transition:border-color .15s var(--ease), background .15s var(--ease);}
+.ms-cal-cell:hover{border-color:var(--gold-tint2);}
+.ms-cal-cell.empty{background:transparent; border-color:transparent; cursor:default;}
+.ms-cal-cell.today{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset;}
+.ms-cal-daynum{font-size:11px; color:var(--text-dim); font-weight:600;}
+.ms-cal-icon{font-size:16px;}
+.ms-cal-txt{font-size:9.5px; line-height:1.25; color:var(--text-dim); white-space:normal; overflow:hidden;}
+.ms-cal-cell.done{background:rgba(60,180,120,.10); border-color:rgba(60,180,120,.35);}
+.ms-cal-cell.pending{background:rgba(230,160,40,.08);}
+.ms-cal-cell.paused-day, .ms-cal-cell.off-day{opacity:.55;}
 .hub-card .hc-go{color:var(--text-dim2); font-size:22px; line-height:1; transition:transform .18s var(--ease), color .18s var(--ease);}
 .hub-card:hover{border-color:var(--gold-tint2); background:var(--surface-2); transform:translateY(-1px);}
 .hub-card:hover .hc-spine{width:10px; box-shadow:0 0 26px 1px var(--gold);}
 .hub-card:hover .hc-go{color:var(--gold-soft); transform:translateX(4px);}
-#hubFinanceCard   { --gold:#C9A227; --gold-soft:#E8CE7B; --gold-tint:rgba(201,162,39,.13); --gold-tint2:rgba(201,162,39,.34); }
-#hubAttendanceCard{ --gold:#6FAE9A; --gold-soft:#A8D2C4; --gold-tint:rgba(111,174,154,.13); --gold-tint2:rgba(111,174,154,.34); }
-#hubKafalatCard   { --gold:#9CA6C4; --gold-soft:#C5CCDE; --gold-tint:rgba(156,166,196,.15); --gold-tint2:rgba(156,166,196,.36); }
-#hubAqsatiCard    { --gold:#D08A73; --gold-soft:#EAB6A4; --gold-tint:rgba(208,138,115,.13); --gold-tint2:rgba(208,138,115,.34); }
+#hubFinanceCard   { --gold:#2F7DE0; --gold-soft:#8FC3FF; --gold-tint:rgba(47,125,224,.13); --gold-tint2:rgba(47,125,224,.36); }
+#hubAttendanceCard{ --gold:#4FA3D8; --gold-soft:#A9D9F5; --gold-tint:rgba(79,163,216,.13); --gold-tint2:rgba(79,163,216,.36); }
+#hubKafalatCard   { --gold:#6C87D8; --gold-soft:#B7C4EF; --gold-tint:rgba(108,135,216,.15); --gold-tint2:rgba(108,135,216,.38); }
+#hubAqsatiCard    { --gold:#3FA7A0; --gold-soft:#9FDCD6; --gold-tint:rgba(63,167,160,.13); --gold-tint2:rgba(63,167,160,.36); }
+#hubMasariCard    { --gold:#6C87D8; --gold-soft:#B7C4EF; --gold-tint:rgba(108,135,216,.13); --gold-tint2:rgba(108,135,216,.36); }
 
 /* ---------- narrow screens ---------- */
 @media (max-width:1000px){
@@ -592,6 +625,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
         <span class="hc-body">
           <span class="hc-name">Raseed <em>رصيد</em></span>
           <span class="hc-desc">Personal finance — accounts, transactions, transfers</span>
+          <div class="hc-stats" id="hubFinanceStats"></div>
         </span>
         <span class="hc-go">›</span>
       </div>
@@ -601,6 +635,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
         <span class="hc-body">
           <span class="hc-name">Dawami <em>دوامي</em></span>
           <span class="hc-desc">Work attendance — check-in/out, tasks, overtime</span>
+          <div class="hc-stats" id="hubAttendanceStats"></div>
         </span>
         <span class="hc-go">›</span>
       </div>
@@ -610,6 +645,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
         <span class="hc-body">
           <span class="hc-name">Kafalati <em>كفالاتي</em></span>
           <span class="hc-desc">Sponsorships — monthly cases, sponsors, payments</span>
+          <div class="hc-stats" id="hubKafalatStats"></div>
         </span>
         <span class="hc-go">›</span>
       </div>
@@ -619,6 +655,17 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
         <span class="hc-body">
           <span class="hc-name">Aqsati <em>أقساطي</em></span>
           <span class="hc-desc">Installments &amp; loans — car finance, BNPL, payment schedules</span>
+          <div class="hc-stats" id="hubAqsatiStats"></div>
+        </span>
+        <span class="hc-go">›</span>
+      </div>
+      <div class="panel hub-card" id="hubMasariCard">
+        <span class="hc-spine"></span>
+        <span class="hc-glyph">📖</span>
+        <span class="hc-body">
+          <span class="hc-name">Masari <em>مساري</em></span>
+          <span class="hc-desc">Qur'an memorization &amp; review path — your own pace, start/pause anytime</span>
+          <div class="hc-stats" id="hubMasariStats"></div>
         </span>
         <span class="hc-go">›</span>
       </div>
@@ -631,6 +678,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     <button class="active" data-tab="overview">Overview</button>
     <button data-tab="list">Transactions</button>
     <button data-tab="transfers">Transfers</button>
+    <button data-tab="recurring">Recurring</button>
     <button data-tab="accounts">Accounts &amp; Categories</button>
   </div>
 
@@ -648,8 +696,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     <div class="range-chip" data-range="all">All</div>
     <div class="range-chip" id="customRangeChip">Custom range</div>
     <span id="rangeCustomLabel" style="font-size:12px; color:var(--text-dim);"></span>
-    <select class="mini-select" id="acctFilterSelect"></select>
-    <select class="mini-select" id="catFilterSelect"></select>
+    <div class="multiselect" id="acctFilterMs">
+      <button type="button" class="mini-select ms-btn" id="acctFilterBtn">All Accounts</button>
+      <div class="ms-panel" id="acctFilterPanel"></div>
+    </div>
+    <div class="multiselect" id="catFilterMs">
+      <button type="button" class="mini-select ms-btn" id="catFilterBtn">All Categories</button>
+      <div class="ms-panel" id="catFilterPanel"></div>
+    </div>
     <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search notes, categories, accounts, amounts…">
     <span id="activeFilterChips"></span>
   </div>
@@ -721,6 +775,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
       <button class="btn solid small" id="addTransferBtn">+ New transfer</button>
     </div>
     <div id="transfersView"></div>
+  </section>
+
+  <!-- ===== TAB: recurring ===== -->
+  <section id="tab-recurring" style="display:none;">
+    <div class="panel" style="margin-bottom:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div style="font-size:12.5px; color:var(--text-dim);">Recurring expenses, income, or transfers — auto-created as each due date actually arrives (never all at once, and never before its day comes).</div>
+      <button class="btn solid small" id="addRecurringBtn">+ New recurring</button>
+    </div>
+    <div id="recurringView"></div>
   </section>
 
   <!-- ===== TAB: accounts & categories (merged) ===== -->
@@ -989,6 +1052,117 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
   </div>
   <!-- ===== end aqsatiApp ===== -->
 
+  <!-- ===== MASARI APP (Qur'an memorization & review path) ===== -->
+  <div id="masariApp" style="display:none;">
+    <div class="deck">
+  <div class="tabbar" id="msTabbar">
+      <button class="active" data-ms-tab="overview">Overview</button>
+      <button data-ms-tab="log">Log</button>
+      <button data-ms-tab="settings">Path Settings</button>
+    </div>
+    <div class="toolbar">
+      <button class="tbtn transfer" id="msPauseBtn">⏸ Pause path</button>
+    </div>
+    <div class="range-row">
+      <div class="range-chip" data-ms-range="week">Week</div>
+      <div class="range-chip active" data-ms-range="month">Month</div>
+      <div class="range-chip" data-ms-range="all">All</div>
+      <div class="range-chip" id="msCustomRangeChip">Custom range</div>
+      <span id="msRangeCustomLabel" style="font-size:12px; color:var(--text-dim);"></span>
+    </div>
+    <div class="range-nav" id="msRangeNav">
+      <button id="msRangeNavPrev">‹</button>
+      <div class="rnl" id="msRangeNavLabel"></div>
+      <button id="msRangeNavNext">›</button>
+    </div>
+  </div><!-- /deck -->
+
+    <!-- Masari Overview -->
+    <section id="ms-tab-overview">
+      <div class="dash-grid">
+        <div>
+          <div class="hero-card">
+            <div class="hero-label" id="msHeroLabel">Qur'an memorized so far</div>
+            <div class="hero-value" id="msPct"><span class="cur">%</span>0.0</div>
+            <div class="hero-sub-row">
+              <div class="hero-sub income"><div class="hl">Ayahs memorized</div><div class="hv" id="msAyahsDone">0 / 6236</div></div>
+              <div class="hero-sub expense"><div class="hl">Days completed</div><div class="hv" id="msDaysDone">0</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Today <span id="msTodayDateLabel" style="text-transform:none; font-weight:500; font-size:11px;"></span></h3>
+            <div id="msTodayCard"></div>
+          </div>
+          <div class="panel">
+            <h3>Position &amp; Projection</h3>
+            <div id="msProjection" class="note-box">—</div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <h3>Current Position</h3>
+            <div class="acct-bars" id="msPositionBars"></div>
+          </div>
+          <div class="panel">
+            <h3>Recent Days</h3>
+            <div id="msRecent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Masari Log -->
+    <section id="ms-tab-log" style="display:none;">
+      <div class="note-box" style="margin-bottom:14px;">Every scheduled day (memorization or comprehensive review) appears here as its due date actually arrives. Tap "تم" to mark it done — tap again to undo. Paused days are skipped and never count against you.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <div class="tab-mini" id="msLogViewTabs">
+          <button class="active" data-v="list">List</button>
+          <button data-v="calendar">Calendar</button>
+        </div>
+        <div class="range-nav" id="msCalNav" style="display:none;">
+          <button id="msCalNavPrev">‹</button>
+          <div class="rnl" id="msCalNavLabel"></div>
+          <button id="msCalNavNext">›</button>
+        </div>
+      </div>
+      <div id="msLogView"></div>
+      <div id="msLogCalendarView" style="display:none;"></div>
+    </section>
+
+    <!-- Masari Path Settings -->
+    <section id="ms-tab-settings" style="display:none;">
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Your Path</h3>
+        <div class="field"><label>Start date (free to pick/change anytime)</label><input type="date" id="msSetStartDate" style="max-width:220px;"></div>
+        <div class="field"><label>Memorization days <span style="color:var(--text-dim2); font-weight:400;">(pick as many or as few as you want — the rest are automatic rest days)</span></label>
+          <div class="tab-mini" id="msMemoDaysPicker" style="display:flex; flex-wrap:wrap; gap:4px; background:transparent; padding:0;"></div>
+        </div>
+        <div class="field"><label>Comprehensive review days <span style="color:var(--text-dim2); font-weight:400;">(usually one day — content just accumulates until you actually review it)</span></label>
+          <div class="tab-mini" id="msReviewDaysPicker" style="display:flex; flex-wrap:wrap; gap:4px; background:transparent; padding:0;"></div>
+        </div>
+        <div class="field-row" style="display:flex; gap:10px;">
+          <div class="field" style="flex:1;"><label>New memorization per day (ayahs)</label><input type="number" id="msSetAyahsPerDay" min="1" step="1" value="3"></div>
+          <div class="field" style="flex:1;"><label>Start point</label>
+            <select id="msSetStartSurah"></select>
+          </div>
+          <div class="field" style="flex:0 0 120px;"><label>From ayah</label><input type="number" id="msSetStartAyah" min="1" step="1" value="1"></div>
+        </div>
+        <div class="note-box" id="msSettingsSummary">—</div>
+        <button class="btn solid" id="msSaveSettingsBtn">Save path settings</button>
+      </div>
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Pause History</h3>
+        <div id="msPauseHistory"></div>
+      </div>
+      <div class="panel">
+        <h3 style="text-transform:none; font-size:16px;">Reset</h3>
+        <div style="font-size:12.5px; color:var(--text-dim); margin-bottom:10px;">Clears every "done" mark and pause period — the path itself (start date, pace, start point) stays as configured above.</div>
+        <button class="btn ghost" id="msResetProgressBtn">Reset progress</button>
+      </div>
+    </section>
+  </div>
+  <!-- ===== end masariApp ===== -->
+
 </div>
 
 <!-- ===== aqsati custom range modal ===== -->
@@ -1238,6 +1412,71 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
   </div>
 </div>
 
+<!-- ===== recurring rule: add/edit ===== -->
+<div class="modal-overlay" id="recurringModal">
+  <div class="modal wide">
+    <h3><span id="recTitle">New recurring</span><span class="close-x" onclick="closeModal('recurringModal')">✕</span></h3>
+
+    <div class="field"><label>Type</label>
+      <span class="tab-mini" id="recTypeTabs" style="display:flex; width:100%;">
+        <button class="active" data-rt="expense" style="flex:1;">− Expense</button>
+        <button data-rt="income" style="flex:1;">+ Income</button>
+        <button data-rt="transfer" style="flex:1;">⇄ Transfer</button>
+      </span>
+    </div>
+
+    <div id="recAccountField" class="field"><label>Account</label><select id="recAccount"></select></div>
+    <div id="recToAccountField" class="field" style="display:none;"><label>To account</label><select id="recToAccount"></select></div>
+    <div id="recRateField" class="field" style="display:none;">
+      <label id="recRateLabel">Exchange rate</label>
+      <input type="number" id="recRate" step="0.000001" value="1">
+    </div>
+    <div id="recCategoryField" class="field"><label>Category</label><select id="recCategory"></select></div>
+
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:1;"><label>Amount</label><input type="number" id="recAmount" step="0.01" min="0.01"></div>
+      <div class="field" style="flex:1;"><label>Note (optional)</label><input type="text" id="recNote" placeholder="e.g. Rent"></div>
+    </div>
+
+    <div class="field-row" style="display:flex; gap:10px;">
+      <div class="field" style="flex:1;"><label>Start date</label><input type="date" id="recStartDate"></div>
+      <div class="field" style="flex:1;">
+        <label>Repeats every</label>
+        <div style="display:flex; gap:6px;">
+          <input type="number" id="recInterval" min="1" step="1" value="1" style="flex:0 0 70px;">
+          <select id="recFrequency" style="flex:1;">
+            <option value="day">Day(s)</option>
+            <option value="week">Week(s)</option>
+            <option value="month" selected>Month(s)</option>
+            <option value="year">Year(s)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="field"><label>Ends</label>
+      <span class="tab-mini" id="recEndTabs" style="display:flex; width:100%;">
+        <button class="active" data-re="never" style="flex:1;">Never</button>
+        <button data-re="date" style="flex:1;">On date</button>
+        <button data-re="count" style="flex:1;">After N times</button>
+      </span>
+    </div>
+    <div id="recEndDateField" class="field" style="display:none;"><label>End date</label><input type="date" id="recEndDate"></div>
+    <div id="recEndCountField" class="field" style="display:none;"><label>Number of occurrences</label><input type="number" id="recEndCount" min="1" step="1" value="12"></div>
+
+    <div class="field" style="display:flex; align-items:center; justify-content:space-between;">
+      <label style="margin:0;">Active (paused rules never generate transactions)</label>
+      <div class="switch on" id="recActiveSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="note-box" id="recSummary">—</div>
+    <div class="btn-row">
+      <button class="btn ghost" id="recDeleteBtn" style="display:none;">Delete</button>
+      <button class="btn solid" id="recSaveBtn" style="flex:1;">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== storage settings modal ===== -->
 <div class="modal-overlay" id="storageModal">
   <div class="modal wide">
@@ -1301,7 +1540,7 @@ const GS_CLIENT_ID_DEFAULT = '425159118126-bh14caemjeug1i435rs9lpn96sidq0ot.apps
 const GS_SPREADSHEET_ID_DEFAULT = '1xHI4Cu_AyJ9ugPyqSGhQaAMfhbs6ikOB643K8HcL3d4';
 
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
-function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans})); }
+function saveLocal(){ localStorage.setItem(LS_KEY, JSON.stringify({accounts, categories, tx, transfers, fxRates, recurring, attDays, attSettings, kfSponsors, kfPayments, debtPlans, masariPlan, masariProgress})); }
 
 const ACCOUNT_ICONS = ['🏦','👛','💳','🐷','💰','🪙','💵','🏠','🚗','🌍','📱','💎','✈️','🎓','🏥','⛽'];
 const CATEGORY_ICONS_EXPENSE = ['🧺','🍦','☕','⛽','🏛️','👕','🎁','💊','🏋️','🧊','📱','🎮','💻','📚','⚽','🐴','🎸','👶','🏠','🚗','🎬','✈️','🎓','🤲','🍽️','🧾'];
@@ -1325,6 +1564,7 @@ let categories = saved ? saved.categories : [
 let tx = saved ? saved.tx : [];
 let transfers = saved ? (saved.transfers||[]) : [];
 let fxRates = saved ? (saved.fxRates||{}) : { USD:3.6725, SAR:0.9793 };
+let recurring = saved ? (saved.recurring||[]) : [];
 let attDays = saved ? (saved.attDays||[]) : [];
 let attSettings = saved ? (saved.attSettings||null) : null;
 if(!attSettings) attSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'2025-06-19', ramadanPeriods:[{start:'2026-02-18', end:'2026-03-19'}], assignedByList:[] };
@@ -1332,6 +1572,11 @@ if(!attSettings.assignedByList) attSettings.assignedByList = [];
 let kfSponsors = saved ? (saved.kfSponsors||[]) : [];
 let kfPayments = saved ? (saved.kfPayments||[]) : [];
 let debtPlans = saved ? (saved.debtPlans||[]) : [];
+let masariPlan = saved ? (saved.masariPlan||null) : null;
+if(!masariPlan) masariPlan = { startDate: todayKey(), memoDays:[6,0,1,2,3,4], reviewDays:[5], ayahsPerDay: 3, startSurah: 2, startAyah: 1, endSurah: 114, pausedIntervals: [] };
+if(!masariPlan.memoDays) masariPlan.memoDays = [6,0,1,2,3,4];
+if(!masariPlan.reviewDays) masariPlan.reviewDays = [masariPlan.reviewWeekday!==undefined ? Number(masariPlan.reviewWeekday) : 5];
+let masariProgress = saved ? (saved.masariProgress||{}) : {}; // { 'YYYY-MM-DD' (scheduled date) : 'YYYY-MM-DD' (actual done date) }
 if(!saved) saveLocal();
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -1354,8 +1599,8 @@ function getAccount(id){ return accounts.find(a=>a.id===id); }
 function getCategory(id){ return categories.find(c=>c.id===id); }
 
 /* ---------------- state ---------------- */
-let selectedAccountId='all';
-let activeCategoryFilter='all';
+let selectedAccountIds=new Set(); // empty = all accounts
+let activeCategoryIds=new Set(); // empty = all categories
 let searchQuery='';
 let rangeMode='month';
 let rangeAnchor=new Date();
@@ -1418,8 +1663,8 @@ function filteredTx(){
   const r=computeRange();
   return tx.filter(t=>{
     if(t.date<r.start || t.date>r.end) return false;
-    if(selectedAccountId!=='all' && t.accountId!==selectedAccountId) return false;
-    if(activeCategoryFilter!=='all' && t.categoryId!==activeCategoryFilter) return false;
+    if(selectedAccountIds.size && !selectedAccountIds.has(t.accountId)) return false;
+    if(activeCategoryIds.size && !activeCategoryIds.has(t.categoryId)) return false;
     if(!matchesSearch(t)) return false;
     return true;
   });
@@ -1428,7 +1673,7 @@ function filteredTransfers(){
   const r=computeRange();
   return transfers.filter(t=>{
     if(t.date<r.start || t.date>r.end) return false;
-    if(selectedAccountId!=='all' && t.accountId!==selectedAccountId && t.toAccountId!==selectedAccountId) return false;
+    if(selectedAccountIds.size && !selectedAccountIds.has(t.accountId) && !selectedAccountIds.has(t.toAccountId)) return false;
     if(!matchesSearch(t)) return false;
     return true;
   });
@@ -1458,21 +1703,72 @@ document.querySelectorAll('.range-chip[data-range]').forEach(chip=>{
 });
 document.getElementById('customRangeChip').addEventListener('click', ()=>openModal('customRangeModal'));
 
-function renderAcctFilterSelect(){
-  const sel = document.getElementById('acctFilterSelect');
-  sel.innerHTML = ['<option value="all">All Accounts</option>'].concat(accounts.map(a=>`<option value="${a.id}">${a.name} (${a.currency})</option>`)).join('');
-  sel.value = selectedAccountId;
+/* ---- generic multi-select dropdown helper (accounts / categories filters) ---- */
+function setupMultiSelect(btnId, panelId){
+  const btn=document.getElementById(btnId), panel=document.getElementById(panelId);
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const willOpen = !panel.classList.contains('open');
+    document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+    if(willOpen) panel.classList.add('open');
+  });
 }
-document.getElementById('acctFilterSelect').addEventListener('change', (e)=>{ selectedAccountId = e.target.value; renderAll(); });
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.multiselect')) document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+});
+setupMultiSelect('acctFilterBtn','acctFilterPanel');
+setupMultiSelect('catFilterBtn','catFilterPanel');
+
+function renderAcctFilterSelect(){
+  const panel = document.getElementById('acctFilterPanel');
+  if(!accounts.length){ panel.innerHTML='<div class="ms-empty">No accounts yet</div>'; }
+  else{
+    panel.innerHTML = `<div class="ms-actions"><span data-msact="all">Select all</span><span data-msact="clear">Clear</span></div>` +
+      accounts.map(a=>`<label class="ms-opt"><input type="checkbox" value="${a.id}" ${selectedAccountIds.has(a.id)?'checked':''}>${a.icon} ${a.name} <span style="color:var(--text-dim2);">(${a.currency})</span></label>`).join('');
+    panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        if(cb.checked) selectedAccountIds.add(cb.value); else selectedAccountIds.delete(cb.value);
+        renderAcctFilterBtnLabel(); renderAll();
+      });
+    });
+    panel.querySelector('[data-msact="all"]').addEventListener('click', ()=>{ selectedAccountIds=new Set(accounts.map(a=>a.id)); renderAcctFilterSelect(); renderAll(); });
+    panel.querySelector('[data-msact="clear"]').addEventListener('click', ()=>{ selectedAccountIds=new Set(); renderAcctFilterSelect(); renderAll(); });
+  }
+  renderAcctFilterBtnLabel();
+}
+function renderAcctFilterBtnLabel(){
+  const btn=document.getElementById('acctFilterBtn');
+  if(!selectedAccountIds.size) btn.textContent='All Accounts';
+  else if(selectedAccountIds.size===1){ const a=getAccount([...selectedAccountIds][0]); btn.textContent = a ? a.name : '1 account'; }
+  else btn.textContent = selectedAccountIds.size+' accounts';
+}
 
 function renderCatFilterSelect(){
-  const sel = document.getElementById('catFilterSelect');
-  const exp = categories.filter(c=>c.type==='expense').map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-  const inc = categories.filter(c=>c.type==='income').map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-  sel.innerHTML = `<option value="all">All Categories</option><optgroup label="Expense">${exp}</optgroup><optgroup label="Income">${inc}</optgroup>`;
-  sel.value = activeCategoryFilter;
+  const panel = document.getElementById('catFilterPanel');
+  const exp = categories.filter(c=>c.type==='expense'), inc = categories.filter(c=>c.type==='income');
+  if(!exp.length && !inc.length){ panel.innerHTML='<div class="ms-empty">No categories yet</div>'; }
+  else{
+    const optHtml = c=>`<label class="ms-opt"><input type="checkbox" value="${c.id}" ${activeCategoryIds.has(c.id)?'checked':''}>${c.icon} ${c.name}</label>`;
+    panel.innerHTML = `<div class="ms-actions"><span data-msact="all">Select all</span><span data-msact="clear">Clear</span></div>` +
+      (exp.length?`<div style="font-size:10.5px; color:var(--text-dim2); padding:4px 8px 2px;">Expense</div>${exp.map(optHtml).join('')}`:'') +
+      (inc.length?`<div style="font-size:10.5px; color:var(--text-dim2); padding:6px 8px 2px;">Income</div>${inc.map(optHtml).join('')}`:'');
+    panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        if(cb.checked) activeCategoryIds.add(cb.value); else activeCategoryIds.delete(cb.value);
+        renderCatFilterBtnLabel(); renderAll();
+      });
+    });
+    panel.querySelector('[data-msact="all"]').addEventListener('click', ()=>{ activeCategoryIds=new Set([...exp,...inc].map(c=>c.id)); renderCatFilterSelect(); renderAll(); });
+    panel.querySelector('[data-msact="clear"]').addEventListener('click', ()=>{ activeCategoryIds=new Set(); renderCatFilterSelect(); renderAll(); });
+  }
+  renderCatFilterBtnLabel();
 }
-document.getElementById('catFilterSelect').addEventListener('change', (e)=>{ activeCategoryFilter = e.target.value; renderAll(); });
+function renderCatFilterBtnLabel(){
+  const btn=document.getElementById('catFilterBtn');
+  if(!activeCategoryIds.size) btn.textContent='All Categories';
+  else if(activeCategoryIds.size===1){ const c=getCategory([...activeCategoryIds][0]); btn.textContent = c ? c.name : '1 category'; }
+  else btn.textContent = activeCategoryIds.size+' categories';
+}
 
 let searchDebounce;
 document.getElementById('searchInput').addEventListener('input', (e)=>{
@@ -1482,7 +1778,7 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
 });
 
 /* ---------------- hub navigation ---------------- */
-const ALL_APP_IDS = ['financeApp','attendanceApp','kafalatApp','aqsatiApp'];
+const ALL_APP_IDS = ['financeApp','attendanceApp','kafalatApp','aqsatiApp','masariApp'];
 let appView = 'hub';
 function showHub(){
   appView='hub';
@@ -1491,6 +1787,90 @@ function showHub(){
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Choose an app';
   document.getElementById('brandMark').textContent='🔷';
+  renderHubStats();
+}
+
+/* ---------------- hub: small live stats on each app card ---------------- */
+function hubPill(label, value, warn){
+  return `<span class="hc-stat-pill${warn?' warn':''}">${label} <b>${value}</b></span>`;
+}
+function renderHubStats(){
+  try{
+    // Raseed — current total balance
+    const balEl = document.getElementById('hubFinanceStats');
+    const bal = totalBalanceMainCurrency();
+    balEl.innerHTML = hubPill('Balance', fmtMoney(bal, MAIN_CURRENCY), bal<0);
+  }catch(err){ /* app not initialized yet */ }
+
+  try{
+    // Dawami — hours worked + overtime this month
+    const attEl = document.getElementById('hubAttendanceStats');
+    const now = todayKey(); const mk = now.slice(0,7);
+    const monthStart = mk+'-01';
+    const empStart = attSettings.startDate || now;
+    const from = empStart>monthStart ? empStart : monthStart;
+    let act=0, ot=0;
+    if(from<=now){
+      allDatesInRange(from, now).forEach(dk=>{ const d=getDayInfo(dk); act+=dayActualHours(d); ot+=dayOvertime(d); });
+    }
+    attEl.innerHTML = hubPill('This month', `${(Math.round(act*100)/100).toFixed(1)} hrs`) + (ot>0.001 ? hubPill('Overtime', `+${(Math.round(ot*100)/100).toFixed(1)} hrs`) : '');
+  }catch(err){}
+
+  try{
+    // Kafalati — payments made this month + value of one case
+    const kfEl = document.getElementById('hubKafalatStats');
+    const mk = todayKey().slice(0,7);
+    const monthList = kfPayments.filter(p=>p.date.slice(0,7)===mk);
+    const sortedAll = [...kfPayments].sort((a,b)=>a.date.localeCompare(b.date));
+    const latest = sortedAll.length ? sortedAll[sortedAll.length-1] : null;
+    let html = hubPill('Payments this month', monthList.length);
+    if(latest) html += hubPill('Case value', fmtMoney(latest.caseValue||0, latest.currency||'SYP'));
+    kfEl.innerHTML = html;
+  }catch(err){}
+
+  try{
+    // Aqsati — next installment + anything due this month
+    const aqEl = document.getElementById('hubAqsatiStats');
+    const now = todayKey(); const mk = now.slice(0,7);
+    const upcoming = [];
+    (debtPlans||[]).forEach(p=>{ (p.schedule||[]).forEach(row=>{ if(!row.paid) upcoming.push({plan:p,row}); }); });
+    upcoming.sort((a,b)=>a.row.date.localeCompare(b.row.date));
+    let html='';
+    if(upcoming.length){
+      const n = upcoming[0];
+      html += hubPill('Next', `${n.plan.name} · ${fmtMoney(n.row.amount, n.plan.currency||'AED')} (${n.row.date})`, n.row.date<now);
+      const dueThisMonth = upcoming.filter(u=>u.row.date.slice(0,7)===mk);
+      if(dueThisMonth.length){
+        const totalDue = dueThisMonth.reduce((s,u)=>s+u.row.amount,0);
+        const names = dueThisMonth.map(u=>u.plan.name).join(', ');
+        html += hubPill('Due this month', `${dueThisMonth.length} — ${names} (${fmtMoney(totalDue, dueThisMonth[0].plan.currency||'AED')})`);
+      }
+    } else { html = hubPill('Installments', 'all clear 🎉'); }
+    aqEl.innerHTML = html;
+  }catch(err){}
+
+  try{
+    // Masari — progress %, current surah, today's task
+    const msEl = document.getElementById('hubMasariStats');
+    if(!masariPlan || !masariPlan.startDate){ msEl.innerHTML = hubPill('Path', 'not started yet'); }
+    else{
+      const pos = msCurrentPosition();
+      const pct = (pos.ayahsDone/QURAN_TOTAL_AYAHS*100);
+      let todayTxt = '—';
+      if(!(todayKey()<masariPlan.startDate)){
+        const todayEntries = msBuildSchedule(todayKey());
+        const te = todayEntries.length ? todayEntries[todayEntries.length-1] : null;
+        if(te){
+          todayTxt = te.type==='memo' ? `حفظ: ${msSurahName(te.chunk.surah)} ${te.chunk.from}-${te.chunk.to}`
+            : te.type==='review' ? 'مراجعة شاملة'
+            : te.type==='paused' ? 'متوقف'
+            : te.type==='off' ? 'يوم راحة'
+            : 'اكتمل الختم 🎉';
+        }
+      }
+      msEl.innerHTML = hubPill('Progress', pct.toFixed(1)+'%') + hubPill('Surah', msSurahName(pos.ptrSurah)) + hubPill('Today', todayTxt);
+    }
+  }catch(err){}
 }
 function enterFinance(){
   appView='finance';
@@ -1499,6 +1879,7 @@ function enterFinance(){
   document.getElementById('brandTitle').textContent='AUJ';
   document.getElementById('brandSub').textContent='Raseed — personal finance';
   document.getElementById('brandMark').textContent='💰';
+  if(processRecurringDue()) showToast('Recurring payments up to date');
   renderAll();
 }
 function enterAttendance(){
@@ -1532,11 +1913,21 @@ function enterAqsati(){
   document.getElementById('brandMark').textContent='💳';
   renderRangeNavAq(); renderAqAll();
 }
+function enterMasari(){
+  appView='masari';
+  document.getElementById('hubScreen').style.display='none';
+  ALL_APP_IDS.forEach(id=>document.getElementById(id).style.display=(id==='masariApp')?'block':'none');
+  document.getElementById('brandTitle').textContent='AUJ';
+  document.getElementById('brandSub').textContent='Masari — Qur\'an memorization path';
+  document.getElementById('brandMark').textContent='📖';
+  renderRangeNavMs(); renderMasariAll();
+}
 document.getElementById('hubBtn').addEventListener('click', showHub);
 document.getElementById('hubFinanceCard').addEventListener('click', enterFinance);
 document.getElementById('hubAttendanceCard').addEventListener('click', enterAttendance);
 document.getElementById('hubKafalatCard').addEventListener('click', enterKafalat);
 document.getElementById('hubAqsatiCard').addEventListener('click', enterAqsati);
+document.getElementById('hubMasariCard').addEventListener('click', enterMasari);
 
 /* ---------------- attendance: time filter (mirrors the finance one, own state) ---------------- */
 let attRangeMode='month', attRangeAnchor=new Date(), attCustomFrom=null, attCustomTo=null, attSearchQuery='';
@@ -2028,13 +2419,13 @@ document.getElementById('tabbar').addEventListener('click', (e)=>{
   const b=e.target.closest('button'); if(!b) return;
   document.querySelectorAll('#tabbar button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
   currentTab=b.dataset.tab;
-  ['overview','list','transfers','accounts'].forEach(t=>{ document.getElementById('tab-'+t).style.display = (t===currentTab)?'block':'none'; });
+  ['overview','list','transfers','recurring','accounts'].forEach(t=>{ document.getElementById('tab-'+t).style.display = (t===currentTab)?'block':'none'; });
   renderAll();
 });
 function goToTab(name){
   document.querySelectorAll('#tabbar button').forEach(x=>x.classList.toggle('active', x.dataset.tab===name));
   currentTab=name;
-  ['overview','list','transfers','accounts'].forEach(t=>{ document.getElementById('tab-'+t).style.display = (t===name)?'block':'none'; });
+  ['overview','list','transfers','recurring','accounts'].forEach(t=>{ document.getElementById('tab-'+t).style.display = (t===name)?'block':'none'; });
 }
 
 /* ---------------- render: overview ---------------- */
@@ -2042,18 +2433,20 @@ const PALETTE=['#C9A227','#5FB489','#C4574A','#7FAE9C','#E8CE7B','#B5654A','#7A7
 
 function renderOverview(){
   const list=filteredTx();
+  const singleAcc = selectedAccountIds.size===1 ? getAccount([...selectedAccountIds][0]) : null;
   let income=0, expense=0;
   list.forEach(t=>{
-    if(selectedAccountId!=='all'){
-      if(t.type==='income' && t.accountId===selectedAccountId) income+=t.amount;
-      if(t.type==='expense' && t.accountId===selectedAccountId) expense+=t.amount;
+    if(singleAcc){
+      if(t.type==='income' && t.accountId===singleAcc.id) income+=t.amount;
+      if(t.type==='expense' && t.accountId===singleAcc.id) expense+=t.amount;
     } else {
       if(t.type==='income' && t.currency===MAIN_CURRENCY) income+=t.amount;
       if(t.type==='expense' && t.currency===MAIN_CURRENCY) expense+=t.amount;
     }
   });
-  const cur = selectedAccountId==='all' ? MAIN_CURRENCY : getAccount(selectedAccountId).currency;
-  const bal = selectedAccountId==='all' ? totalBalanceMainCurrency() : accountRunningBalance(getAccount(selectedAccountId));
+  const cur = singleAcc ? singleAcc.currency : MAIN_CURRENCY;
+  const bal = singleAcc ? accountRunningBalance(singleAcc)
+    : (selectedAccountIds.size ? accounts.filter(a=>selectedAccountIds.has(a.id) && a.currency===MAIN_CURRENCY).reduce((s,a)=>s+accountRunningBalance(a),0) : totalBalanceMainCurrency());
   document.getElementById('ovBalance').innerHTML = `<span class="cur">${cur}</span>${fmtNum(bal)}`;
   document.getElementById('ovIncome').textContent = fmtMoney(income,cur);
   document.getElementById('ovExpense').textContent = fmtMoney(expense,cur);
@@ -2061,7 +2454,7 @@ function renderOverview(){
   renderTrendChart();
 
   const catSums={};
-  list.filter(t=>t.type==='expense' && (selectedAccountId!=='all' || t.currency===MAIN_CURRENCY)).forEach(t=>{ catSums[t.categoryId]=(catSums[t.categoryId]||0)+t.amount; });
+  list.filter(t=>t.type==='expense' && (selectedAccountIds.size || t.currency===MAIN_CURRENCY)).forEach(t=>{ catSums[t.categoryId]=(catSums[t.categoryId]||0)+t.amount; });
   const rows = Object.entries(catSums).map(([cid,val])=>({cat:getCategory(cid), val})).filter(e=>e.cat).sort((a,b)=>b.val-a.val);
   const total = rows.reduce((s,e)=>s+e.val,0) || 1;
   document.getElementById('ovDonutTotal').textContent = fmtMoney(rows.length?total:0, cur);
@@ -2110,15 +2503,26 @@ function renderOverview(){
     const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
     if(t._kind==='transfer'){
       const from=getAccount(t.accountId), to=getAccount(t.toAccountId);
-      row.innerHTML=`<div class="list-icon">⇄</div><div class="ltxt"><div class="ln1">${from?from.name:'—'} → ${to?to.name:'—'}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt transfer">${fmtNum(t.amount)} ${t.currency}</div>`;
+      row.innerHTML=`<div class="list-icon">⇄</div><div class="ltxt"><div class="ln1">${from?from.name:'—'} → ${to?to.name:'—'}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt transfer">${fmtNum(t.amount)} ${t.currency}</div>
+        <div class="tx-actions"><span data-ovedit="${t.id}" data-ovkind="transfer" title="Edit">✎</span><span data-ovdup="${t.id}" data-ovkind="transfer" title="Duplicate">⧉</span><span data-ovdel="${t.id}" data-ovkind="transfer" title="Delete">✕</span></div>`;
     } else {
       const lbl=txLabel(t);
       const sign = t.type==='income'?'+':'-';
       const cls = t.type==='income'?'income':'expense';
-      row.innerHTML=`<div class="list-icon">${lbl.icon}</div><div class="ltxt"><div class="ln1">${lbl.name}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency)}</div>`;
+      row.innerHTML=`<div class="list-icon">${lbl.icon}</div><div class="ltxt"><div class="ln1">${lbl.name}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency)}</div>
+        <div class="tx-actions"><span data-ovedit="${t.id}" data-ovkind="tx" title="Edit">✎</span><span data-ovdup="${t.id}" data-ovkind="tx" title="Duplicate">⧉</span><span data-ovdel="${t.id}" data-ovkind="tx" title="Delete">✕</span></div>`;
     }
     rel.appendChild(row);
   });
+  rel.querySelectorAll('[data-ovedit]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation();
+    if(b.dataset.ovkind==='transfer'){ const t=transfers.find(x=>x.id===b.dataset.ovedit); if(t) openTransferEntry(t); }
+    else { const t=tx.find(x=>x.id===b.dataset.ovedit); if(t) openEntry(t.type, t); } }); });
+  rel.querySelectorAll('[data-ovdup]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation();
+    if(b.dataset.ovkind==='transfer'){ const t=transfers.find(x=>x.id===b.dataset.ovdup); if(t) openTransferEntry(t, true); }
+    else { const t=tx.find(x=>x.id===b.dataset.ovdup); if(t) openEntry(t.type, t, true); } }); });
+  rel.querySelectorAll('[data-ovdel]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation();
+    if(b.dataset.ovkind==='transfer'){ transfers=transfers.filter(x=>x.id!==b.dataset.ovdel); } else { tx=tx.filter(x=>x.id!==b.dataset.ovdel); }
+    persist(); renderAll(); }); });
 }
 
 function renderTrendChart(){
@@ -2185,10 +2589,10 @@ function renderTrendChart(){
   const fmtLbl = k => { const dt=new Date(k+'T00:00:00'); return spanDays>420 ? `${MONTHS[dt.getMonth()].slice(0,3)} ${dt.getFullYear()}` : `${MONTHS[dt.getMonth()].slice(0,3)} ${dt.getDate()}`; };
   svg.innerHTML = `
     <defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#C9A227" stop-opacity="0.35"/><stop offset="100%" stop-color="#C9A227" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#2F7DE0" stop-opacity="0.35"/><stop offset="100%" stop-color="#2F7DE0" stop-opacity="0"/>
     </linearGradient></defs>
     <path d="${area}" fill="url(#trendGrad)"/>
-    <path d="${path}" fill="none" stroke="#E8CE7B" stroke-width="2"/>
+    <path d="${path}" fill="none" stroke="#8FC3FF" stroke-width="2"/>
     <text x="${pad}" y="${H-2}" fill="#6C6C72" font-size="10">${fmtLbl(points[0][0])}</text>
     <text x="${W-pad}" y="${H-2}" fill="#6C6C72" font-size="10" text-anchor="end">${fmtLbl(points[points.length-1][0])}</text>
   `;
@@ -2261,13 +2665,14 @@ function renderGroupedTx(list, groupBy){
       const sign=t.type==='income'?'+':'-';
       row.innerHTML=`<div class="tx-icon">${lbl.icon}</div><div class="tx-info"><div class="tn">${lbl.name}</div><div class="ts">${t.note?t.note+' · ':''}${acc?acc.name:''}</div></div>
         <div class="tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency||'')}</div>
-        <div class="tx-actions"><span data-edit="${t.id}">✎</span><span data-del="${t.id}">✕</span></div>`;
+        <div class="tx-actions"><span data-edit="${t.id}" title="Edit">✎</span><span data-dup="${t.id}" title="Duplicate">⧉</span><span data-del="${t.id}" title="Delete">✕</span></div>`;
       body.appendChild(row);
     });
     el.appendChild(body);
   });
   el.querySelectorAll('[data-del]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); tx=tx.filter(x=>x.id!==b.dataset.del); persist(); renderAll(); }); });
   el.querySelectorAll('[data-edit]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); const t=tx.find(x=>x.id===b.dataset.edit); if(t) openEntry(t.type, t); }); });
+  el.querySelectorAll('[data-dup]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); const t=tx.find(x=>x.id===b.dataset.dup); if(t) openEntry(t.type, t, true); }); });
 }
 function renderList(){ renderGroupedTx([...filteredTx()], listViewMode); }
 
@@ -2293,13 +2698,14 @@ function renderTransfers(){
         <div class="tx-info"><div class="tn">${from?from.icon+' '+from.name:'—'} → ${to?to.icon+' '+to.name:'—'}</div>
         <div class="ts">${t.note?t.note+' · ':''}${crossCur?`rate ${t.rate}` : ''}</div></div>
         <div class="tx-amt transfer">${fmtNum(t.amount)} ${t.currency}${crossCur?` → ${fmtNum(t.toAmount)} ${t.toCurrency}`:''}</div>
-        <div class="tx-actions"><span data-edit="${t.id}">✎</span><span data-del="${t.id}">✕</span></div>`;
+        <div class="tx-actions"><span data-edit="${t.id}" title="Edit">✎</span><span data-dup="${t.id}" title="Duplicate">⧉</span><span data-del="${t.id}" title="Delete">✕</span></div>`;
       body.appendChild(row);
     });
     el.appendChild(body);
   });
   el.querySelectorAll('[data-del]').forEach(b=>{ b.addEventListener('click', ()=>{ transfers=transfers.filter(x=>x.id!==b.dataset.del); persist(); renderAll(); }); });
   el.querySelectorAll('[data-edit]').forEach(b=>{ b.addEventListener('click', ()=>{ const t=transfers.find(x=>x.id===b.dataset.edit); if(t) openTransferEntry(t); }); });
+  el.querySelectorAll('[data-dup]').forEach(b=>{ b.addEventListener('click', ()=>{ const t=transfers.find(x=>x.id===b.dataset.dup); if(t) openTransferEntry(t, true); }); });
 }
 document.getElementById('addTransferBtn').addEventListener('click', ()=>openTransferEntry(null));
 
@@ -2386,7 +2792,7 @@ function openEditAccount(id){
     if(!id) return;
     accounts=accounts.filter(x=>x.id!==id); tx=tx.filter(t=>t.accountId!==id);
     transfers=transfers.filter(t=>t.accountId!==id && t.toAccountId!==id);
-    if(selectedAccountId===id) selectedAccountId='all';
+    selectedAccountIds.delete(id);
     persist(); closeModal('editAccountModal'); renderAcctFilterSelect(); renderAll(); showToast('Account deleted');
   };
   openModal('editAccountModal');
@@ -2408,7 +2814,7 @@ function openEditCategory(id){
     persist(); closeModal('editCategoryModal'); renderAll(); showToast('Saved');
   };
   document.getElementById('ecDeleteBtn').onclick=()=>{
-    if(!id) return; categories=categories.filter(x=>x.id!==id); persist(); closeModal('editCategoryModal'); renderAll(); showToast('Deleted');
+    if(!id) return; categories=categories.filter(x=>x.id!==id); activeCategoryIds.delete(id); persist(); closeModal('editCategoryModal'); renderAll(); showToast('Deleted');
   };
   openModal('editCategoryModal');
 }
@@ -2422,11 +2828,11 @@ function populateEntryCategorySelect(){
   if(!list.length){ sel.innerHTML='<option value="">No categories — add one first</option>'; return; }
   sel.innerHTML = list.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
 }
-function openEntry(mode, existingTx){
+function openEntry(mode, existingTx, isDuplicate){
   if(!accounts.length){ showToast('Add an account first from the Accounts tab'); goToTab('accounts'); return; }
-  entryMode=mode; editingTxId = existingTx ? existingTx.id : null;
+  entryMode=mode; editingTxId = (existingTx && !isDuplicate) ? existingTx.id : null;
   entryAmountStr = existingTx ? String(existingTx.amount) : '0';
-  document.getElementById('entryTitle').textContent = existingTx ? (mode==='expense'?'Edit expense':'Edit income') : (mode==='expense'?'New expense':'New income');
+  document.getElementById('entryTitle').textContent = isDuplicate ? (mode==='expense'?'Duplicate expense':'Duplicate income') : existingTx ? (mode==='expense'?'Edit expense':'Edit income') : (mode==='expense'?'New expense':'New income');
   document.getElementById('entryAmtBox').className='calc-amt-box '+mode;
   document.getElementById('entryAmt').textContent=entryAmountStr;
   document.getElementById('entryNote').value = existingTx ? (existingTx.note||'') : '';
@@ -2434,11 +2840,11 @@ function openEntry(mode, existingTx){
   document.getElementById('entryDate').value = existingTx ? existingTx.date : todayKey();
   populateAccountSelect(document.getElementById('entryAccountSelect'));
   if(existingTx) document.getElementById('entryAccountSelect').value = existingTx.accountId;
-  else if(selectedAccountId!=='all') document.getElementById('entryAccountSelect').value=selectedAccountId;
+  else if(selectedAccountIds.size===1) document.getElementById('entryAccountSelect').value=[...selectedAccountIds][0];
   updateEntryCurrency();
   populateEntryCategorySelect();
   if(existingTx) document.getElementById('entryCategorySelect').value = existingTx.categoryId;
-  document.getElementById('entrySaveBtn').textContent = existingTx ? 'Update (Enter)' : 'Save (Enter)';
+  document.getElementById('entrySaveBtn').textContent = editingTxId ? 'Update (Enter)' : 'Save (Enter)';
   openModal('entryModal');
 }
 function updateEntryCurrency(){ const a=getAccount(document.getElementById('entryAccountSelect').value); document.getElementById('entryCur').textContent=a?a.currency:'AED'; }
@@ -2473,11 +2879,11 @@ function saveEntry(){
 
 /* ---------------- entry: transfer (create + edit) ---------------- */
 let transferAmountStr='0', editingTransferId=null;
-function openTransferEntry(existing){
+function openTransferEntry(existing, isDuplicate){
   if(accounts.length<2){ showToast('You need at least two accounts to make a transfer'); goToTab('accounts'); return; }
-  editingTransferId = existing ? existing.id : null;
+  editingTransferId = (existing && !isDuplicate) ? existing.id : null;
   transferAmountStr = existing ? String(existing.amount) : '0';
-  document.getElementById('transferTitle').textContent = existing ? 'Edit transfer' : 'Transfer between accounts';
+  document.getElementById('transferTitle').textContent = isDuplicate ? 'Duplicate transfer' : (existing ? 'Edit transfer' : 'Transfer between accounts');
   document.getElementById('transferAmt').textContent = transferAmountStr;
   document.getElementById('transferNote').value = existing ? (existing.note||'') : '';
   populateTextSuggestions('transferNoteSuggestions', transfers.map(t=>t.note));
@@ -2486,7 +2892,7 @@ function openTransferEntry(existing){
   if(existing){ document.getElementById('transferFrom').value=existing.accountId; document.getElementById('transferTo').value=existing.toAccountId; document.getElementById('transferRate').value=existing.rate||1; }
   else { document.getElementById('transferTo').selectedIndex=1; document.getElementById('transferRate').value=1; }
   updateTransferCurrency();
-  document.getElementById('transferSaveBtn').textContent = existing ? 'Update transfer (Enter)' : 'Save transfer (Enter)';
+  document.getElementById('transferSaveBtn').textContent = editingTransferId ? 'Update transfer (Enter)' : 'Save transfer (Enter)';
   openModal('transferModal');
 }
 function updateTransferCurrency(){
@@ -2538,6 +2944,243 @@ function saveTransfer(){
   if(editingTransferId){ const existing = transfers.find(t=>t.id===editingTransferId); Object.assign(existing, payload); }
   else { transfers.push({ id:'x'+Date.now(), ...payload }); }
   persist(); closeModal('transferModal'); renderAll(); showToast(editingTransferId?'Transfer updated':'Transfer saved');
+}
+
+/* ================= RECURRING: rules + auto-generation engine ================= */
+function getRecurring(id){ return recurring.find(r=>r.id===id); }
+
+/* n-th occurrence date (n=0 is the start date itself), month/year steps clamp to the
+   day-of-month of the start date so e.g. "day 31" lands on the last day of short months. */
+function recurringOccurrenceDate(rule, n){
+  const d = new Date(rule.startDate+'T00:00:00');
+  const day = d.getDate();
+  const iv = Math.max(1, parseInt(rule.interval)||1);
+  if(rule.frequency==='day'){ d.setDate(d.getDate()+iv*n); return d; }
+  if(rule.frequency==='week'){ d.setDate(d.getDate()+7*iv*n); return d; }
+  if(rule.frequency==='month'){
+    const first=new Date(d.getFullYear(), d.getMonth()+iv*n, 1);
+    const dim=new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+    first.setDate(Math.min(day,dim));
+    return first;
+  }
+  if(rule.frequency==='year'){
+    const y=d.getFullYear()+iv*n;
+    const dim=new Date(y, d.getMonth()+1, 0).getDate();
+    return new Date(y, d.getMonth(), Math.min(day,dim));
+  }
+  return d;
+}
+function recurringRuleFinished(rule){
+  return rule.endMode==='count' && rule.maxOccurrences!=null && rule.generatedCount>=rule.maxOccurrences;
+}
+function recurringNextDueDate(rule){
+  if(recurringRuleFinished(rule)) return null;
+  const occ = recurringOccurrenceDate(rule, rule.generatedCount);
+  const occKey = fmtDate(occ);
+  if(rule.endMode==='date' && rule.endDate && occKey>rule.endDate) return null;
+  return occKey;
+}
+/* Materializes only the occurrences whose date has actually arrived (<= today) — never
+   creates future-dated entries in advance, and picks up any that became due while the
+   app was closed, one at a time, in order. */
+function processRecurringDue(){
+  const today = todayKey();
+  let changed=false;
+  recurring.forEach(rule=>{
+    if(!rule.active) return;
+    let guard=0;
+    while(guard++<3000){
+      if(recurringRuleFinished(rule)) break;
+      const n = rule.generatedCount;
+      const occKey = fmtDate(recurringOccurrenceDate(rule, n));
+      if(occKey>today) break;
+      if(rule.endMode==='date' && rule.endDate && occKey>rule.endDate) break;
+      const tag = rule.id+'_'+n+'_'+Date.now();
+      if(rule.type==='transfer'){
+        const fromAcc=getAccount(rule.accountId), toAcc=getAccount(rule.toAccountId);
+        if(!fromAcc || !toAcc) break;
+        const rate = fromAcc.currency!==toAcc.currency ? (parseFloat(rule.rate)||1) : 1;
+        transfers.push({ id:'x'+tag, accountId:rule.accountId, toAccountId:rule.toAccountId, amount:rule.amount, currency:fromAcc.currency,
+          toAmount:rule.amount*rate, toCurrency:toAcc.currency, rate, date:occKey, note:rule.note||'', recurringId:rule.id });
+      } else {
+        const acc=getAccount(rule.accountId);
+        if(!acc) break;
+        tx.push({ id:'t'+tag, type:rule.type, accountId:rule.accountId, categoryId:rule.categoryId, amount:rule.amount, currency:acc.currency,
+          date:occKey, note:rule.note||'', recurringId:rule.id });
+      }
+      rule.generatedCount++;
+      changed=true;
+    }
+  });
+  if(changed) saveLocal();
+  return changed;
+}
+
+/* ---- recurring editor modal ---- */
+let editingRecurringId=null, recType='expense', recEndMode='never';
+function populateRecCategorySelect(){
+  const list=categories.filter(c=>c.type===recType);
+  const sel=document.getElementById('recCategory');
+  sel.innerHTML = list.length ? list.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('') : '<option value="">No categories — add one first</option>';
+}
+function updateRecFieldsVisibility(){
+  document.getElementById('recToAccountField').style.display = recType==='transfer' ? 'block':'none';
+  document.getElementById('recCategoryField').style.display = recType==='transfer' ? 'none':'block';
+  updateRecRateVisibility();
+}
+function updateRecRateVisibility(){
+  const from=getAccount(document.getElementById('recAccount').value);
+  const to=getAccount(document.getElementById('recToAccount').value);
+  const show = recType==='transfer' && from && to && from.currency!==to.currency;
+  document.getElementById('recRateField').style.display = show ? 'block':'none';
+  if(show) document.getElementById('recRateLabel').textContent = `Exchange rate (1 ${from.currency} = ? ${to.currency})`;
+  updateRecSummary();
+}
+function updateRecEndVisibility(){
+  document.getElementById('recEndDateField').style.display = recEndMode==='date' ? 'block':'none';
+  document.getElementById('recEndCountField').style.display = recEndMode==='count' ? 'block':'none';
+  updateRecSummary();
+}
+const RECURRING_FREQ_LABEL = {day:'day', week:'week', month:'month', year:'year'};
+function updateRecSummary(){
+  const iv = Math.max(1, parseInt(document.getElementById('recInterval').value)||1);
+  const freq = document.getElementById('recFrequency').value;
+  const start = document.getElementById('recStartDate').value;
+  let s = start ? `Starts ${start}, every ${iv>1?iv+' ':''}${RECURRING_FREQ_LABEL[freq]}${iv>1?'s':''}.` : 'Pick a start date.';
+  if(recEndMode==='date' && document.getElementById('recEndDate').value) s += ` Ends on ${document.getElementById('recEndDate').value}.`;
+  else if(recEndMode==='count') s += ` Stops after ${document.getElementById('recEndCount').value||0} occurrence(s).`;
+  else s += ' Repeats indefinitely.';
+  s += ' Each payment is only created and deducted once its own due date actually arrives — never in advance.';
+  document.getElementById('recSummary').textContent = s;
+}
+document.getElementById('recTypeTabs').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  recType=b.dataset.rt; populateRecCategorySelect(); updateRecFieldsVisibility();
+});
+document.getElementById('recEndTabs').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  recEndMode=b.dataset.re; updateRecEndVisibility();
+});
+document.getElementById('recActiveSwitch').addEventListener('click', function(){ this.classList.toggle('on'); });
+['recAccount','recToAccount'].forEach(id=>document.getElementById(id).addEventListener('change', updateRecRateVisibility));
+['recInterval','recFrequency','recStartDate','recEndDate','recEndCount'].forEach(id=>document.getElementById(id).addEventListener('input', updateRecSummary));
+
+function openRecurringEditor(id){
+  const r = id ? getRecurring(id) : null;
+  editingRecurringId = id||null;
+  recType = r ? r.type : 'expense';
+  recEndMode = r ? r.endMode : 'never';
+  document.getElementById('recTitle').textContent = id ? 'Edit recurring' : 'New recurring';
+  [...document.getElementById('recTypeTabs').children].forEach(b=>b.classList.toggle('active', b.dataset.rt===recType));
+  [...document.getElementById('recEndTabs').children].forEach(b=>b.classList.toggle('active', b.dataset.re===recEndMode));
+  populateAccountSelect(document.getElementById('recAccount'));
+  populateAccountSelect(document.getElementById('recToAccount'));
+  populateRecCategorySelect();
+  document.getElementById('recAccount').value = r ? r.accountId : (accounts[0]?accounts[0].id:'');
+  document.getElementById('recToAccount').value = r && r.toAccountId ? r.toAccountId : (accounts[1]?accounts[1].id:(accounts[0]?accounts[0].id:''));
+  if(r && r.categoryId) document.getElementById('recCategory').value = r.categoryId;
+  document.getElementById('recRate').value = r ? (r.rate||1) : 1;
+  document.getElementById('recAmount').value = r ? r.amount : '';
+  document.getElementById('recNote').value = r ? (r.note||'') : '';
+  document.getElementById('recStartDate').value = r ? r.startDate : todayKey();
+  document.getElementById('recInterval').value = r ? (r.interval||1) : 1;
+  document.getElementById('recFrequency').value = r ? r.frequency : 'month';
+  document.getElementById('recEndDate').value = r && r.endDate ? r.endDate : '';
+  document.getElementById('recEndCount').value = r && r.maxOccurrences ? r.maxOccurrences : 12;
+  document.getElementById('recActiveSwitch').classList.toggle('on', r ? !!r.active : true);
+  document.getElementById('recDeleteBtn').style.display = id ? 'inline-flex' : 'none';
+  updateRecFieldsVisibility(); updateRecEndVisibility(); updateRecSummary();
+  openModal('recurringModal');
+}
+document.getElementById('addRecurringBtn').addEventListener('click', ()=>openRecurringEditor(null));
+document.getElementById('recSaveBtn').addEventListener('click', ()=>{
+  const amount = parseFloat(document.getElementById('recAmount').value)||0;
+  if(amount<=0){ showToast('Enter an amount greater than zero'); return; }
+  const startDate = document.getElementById('recStartDate').value;
+  if(!startDate){ showToast('Pick a start date'); return; }
+  const accountId = document.getElementById('recAccount').value;
+  const toAccountId = document.getElementById('recToAccount').value;
+  if(recType==='transfer' && accountId===toAccountId){ showToast('Choose two different accounts'); return; }
+  const categoryId = document.getElementById('recCategory').value;
+  if(recType!=='transfer' && !categoryId){ showToast('Select a category'); return; }
+  const payload = {
+    type: recType, accountId, toAccountId: recType==='transfer'?toAccountId:null,
+    categoryId: recType==='transfer'?null:categoryId,
+    amount, rate: parseFloat(document.getElementById('recRate').value)||1,
+    note: document.getElementById('recNote').value.trim(),
+    startDate, interval: Math.max(1, parseInt(document.getElementById('recInterval').value)||1),
+    frequency: document.getElementById('recFrequency').value,
+    endMode: recEndMode,
+    endDate: recEndMode==='date' ? (document.getElementById('recEndDate').value||null) : null,
+    maxOccurrences: recEndMode==='count' ? (parseInt(document.getElementById('recEndCount').value)||1) : null,
+    active: document.getElementById('recActiveSwitch').classList.contains('on')
+  };
+  if(editingRecurringId){
+    const existing=getRecurring(editingRecurringId);
+    // changing the start date/frequency resets progress so the new schedule is honoured from scratch
+    if(existing.startDate!==payload.startDate || existing.frequency!==payload.frequency || existing.interval!==payload.interval) payload.generatedCount=0;
+    else payload.generatedCount = existing.generatedCount;
+    Object.assign(existing, payload);
+  } else {
+    recurring.push({ id:'r'+Date.now(), generatedCount:0, ...payload });
+  }
+  processRecurringDue();
+  persist(); closeModal('recurringModal'); renderAll(); showToast(editingRecurringId?'Recurring rule updated':'Recurring rule saved');
+});
+document.getElementById('recDeleteBtn').addEventListener('click', ()=>{
+  if(!editingRecurringId) return;
+  recurring = recurring.filter(r=>r.id!==editingRecurringId);
+  persist(); closeModal('recurringModal'); renderAll(); showToast('Recurring rule deleted');
+});
+
+function recurringSubtitle(r){
+  const iv=r.interval||1;
+  let s = `Every ${iv>1?iv+' ':''}${RECURRING_FREQ_LABEL[r.frequency]}${iv>1?'s':''} · started ${r.startDate}`;
+  if(r.endMode==='date' && r.endDate) s += ` · ends ${r.endDate}`;
+  else if(r.endMode==='count') s += ` · ${r.generatedCount}/${r.maxOccurrences} done`;
+  return s;
+}
+function renderRecurringList(){
+  const el = document.getElementById('recurringView');
+  if(!recurring.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No recurring expenses, income, or transfers yet</div></div>'; return; }
+  el.innerHTML='';
+  recurring.slice().sort((a,b)=>(a.active===b.active?0:(a.active?-1:1))).forEach(r=>{
+    const card=document.createElement('div'); card.className='card';
+    const next = recurringNextDueDate(r);
+    let iconHtml, titleHtml, amtCls, sign;
+    if(r.type==='transfer'){
+      const from=getAccount(r.accountId), to=getAccount(r.toAccountId);
+      iconHtml='⇄'; titleHtml=`${from?from.name:'—'} → ${to?to.name:'—'}`; amtCls='transfer'; sign='';
+    } else {
+      const c=getCategory(r.categoryId);
+      iconHtml = c?c.icon:'❔'; titleHtml = c?c.name:'Uncategorized';
+      amtCls = r.type==='income'?'income':'expense'; sign = r.type==='income'?'+':'-';
+    }
+    const acc = getAccount(r.accountId);
+    card.innerHTML = `
+      <div class="tx-row" style="cursor:pointer;">
+        <div class="tx-icon">${iconHtml}</div>
+        <div class="tx-info">
+          <div class="tn">${titleHtml} ${r.active?'':'<span class="badge off" style="margin-left:6px;">Paused</span>'}</div>
+          <div class="ts">${recurringSubtitle(r)}${r.note?' · '+r.note:''} · ${acc?acc.name:''}${next?' · next due '+next:' · finished'}</div>
+        </div>
+        <div class="tx-amt ${amtCls}">${sign}${fmtMoney(r.amount, acc?acc.currency:'')}</div>
+        <div class="tx-actions" style="opacity:1;"><span data-redit="${r.id}" title="Edit">✎</span><span data-rdup="${r.id}" title="Duplicate">⧉</span><span data-rdel="${r.id}" title="Delete">✕</span></div>
+      </div>`;
+    el.appendChild(card);
+  });
+  el.querySelectorAll('[data-redit]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation(); openRecurringEditor(b.dataset.redit); }));
+  el.querySelectorAll('[data-rdup]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation();
+    const r=getRecurring(b.dataset.rdup); if(!r) return;
+    const copy={...r, id:undefined}; delete copy.id;
+    recurring.push({ ...copy, id:'r'+Date.now(), generatedCount:0 });
+    persist(); renderAll(); showToast('Duplicated — edit and save the new rule');
+  }));
+  el.querySelectorAll('[data-rdel]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation();
+    recurring = recurring.filter(x=>x.id!==b.dataset.rdel); persist(); renderAll();
+  }));
 }
 
 /* keyboard support */
@@ -3111,6 +3754,484 @@ document.getElementById('aqDeletePlanBtn').addEventListener('click', ()=>{
   persist(); closeModal('editAqPlanModal'); renderAqAll(); showToast('Plan deleted');
 });
 
+/* ================= MASARI: Qur'an memorization & review path ================= */
+/* Standard Qur'an surah list — [Arabic name, ayah count]. Al-Fatihah is included for
+   reference but the default plan starts at Al-Baqarah (memorized separately already). */
+const QURAN_SURAHS = [
+  ['الفاتحة',7],['البقرة',286],['آل عمران',200],['النساء',176],['المائدة',120],['الأنعام',165],['الأعراف',206],['الأنفال',75],
+  ['التوبة',129],['يونس',109],['هود',123],['يوسف',111],['الرعد',43],['إبراهيم',52],['الحجر',99],['النحل',128],['الإسراء',111],
+  ['الكهف',110],['مريم',98],['طه',135],['الأنبياء',112],['الحج',78],['المؤمنون',118],['النور',64],['الفرقان',77],['الشعراء',227],
+  ['النمل',93],['القصص',88],['العنكبوت',69],['الروم',60],['لقمان',34],['السجدة',30],['الأحزاب',73],['سبأ',54],['فاطر',45],
+  ['يس',83],['الصافات',182],['ص',88],['الزمر',75],['غافر',85],['فصلت',54],['الشورى',53],['الزخرف',89],['الدخان',59],
+  ['الجاثية',37],['الأحقاف',35],['محمد',38],['الفتح',29],['الحجرات',18],['ق',45],['الذاريات',60],['الطور',49],['النجم',62],
+  ['القمر',55],['الرحمن',78],['الواقعة',96],['الحديد',29],['المجادلة',22],['الحشر',24],['الممتحنة',13],['الصف',14],['الجمعة',11],
+  ['المنافقون',11],['التغابن',18],['الطلاق',12],['التحريم',12],['الملك',30],['القلم',52],['الحاقة',52],['المعارج',44],['نوح',28],
+  ['الجن',28],['المزمل',20],['المدثر',56],['القيامة',40],['الإنسان',31],['المرسلات',50],['النبأ',40],['النازعات',46],['عبس',42],
+  ['التكوير',29],['الانفطار',19],['المطففين',36],['الانشقاق',25],['البروج',22],['الطارق',17],['الأعلى',19],['الغاشية',26],['الفجر',30],
+  ['البلد',20],['الشمس',15],['الليل',21],['الضحى',11],['الشرح',8],['التين',8],['العلق',19],['القدر',5],['البينة',8],['الزلزلة',8],
+  ['العاديات',11],['القارعة',11],['التكاثر',8],['العصر',3],['الهمزة',9],['الفيل',5],['قريش',4],['الماعون',7],['الكوثر',3],
+  ['الكافرون',6],['النصر',3],['المسد',5],['الإخلاص',4],['الفلق',5],['الناس',6]
+];
+const QURAN_TOTAL_AYAHS = QURAN_SURAHS.reduce((s,x)=>s+x[1],0); // 6236
+
+function msSurahName(n){ return QURAN_SURAHS[n-1] ? QURAN_SURAHS[n-1][0] : '—'; }
+function msSurahAyahCount(n){ return QURAN_SURAHS[n-1] ? QURAN_SURAHS[n-1][1] : 0; }
+/* absolute index (1-based, across the whole book) of a given surah:ayah, used for % progress */
+function msGlobalAyahIndex(surah, ayah){
+  let idx=0; for(let s=1;s<surah;s++) idx+=msSurahAyahCount(s);
+  return idx+ayah;
+}
+function msWeekdayName(n){ return WEEKDAYS[n]; }
+
+function msIsPaused(dateKey){
+  return (masariPlan.pausedIntervals||[]).some(p => dateKey>=p.from && (p.to===null || dateKey<=p.to));
+}
+const MS_DAY_ABBR = ['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+
+/* Draws one memo chunk starting at (surah,ayah), never crossing a surah boundary
+   (the last chunk of a surah is shorter rather than spilling into the next one).
+   Returns the chunk plus where the pointer lands AFTER it is completed. */
+function msDrawChunk(surah, ayah, perDay){
+  const total = msSurahAyahCount(surah);
+  const to = Math.min(ayah+perDay-1, total);
+  let advSurah=surah, advAyah=to+1;
+  if(to>=total){ advSurah=surah+1; advAyah=1; }
+  return {surah, from:ayah, to, advSurah, advAyah};
+}
+
+/* Walks the plan day-by-day from its start date up to (and including) `throughKey` and
+   returns {entries, ptrSurah, ptrAyah, ayahsDone, daysDone, finished}. Pure function of
+   masariPlan + masariProgress — nothing is pre-stored, so changing the pace/start/point
+   later simply recomputes cleanly.
+
+   COMPLETION-GATED, not calendar-gated: a memo day's content only advances once THAT day
+   is actually marked done. If you skip a memo day without pausing, the exact same chunk
+   is offered again on your next memo day — nothing is lost and nothing silently jumps
+   ahead. A review day lists everything memorized since the last review that was itself
+   marked done — if a review is skipped, its content simply keeps accumulating (it does
+   not vanish and does not get replaced by "next week's" review). Explicitly pausing is
+   the only thing that removes days from the count entirely. */
+function msSimulate(throughKey){
+  const entries=[];
+  let ptrSurah=masariPlan.startSurah||2, ptrAyah=masariPlan.startAyah||1, ayahsDone=0, daysDone=0, finished=false;
+  if(!masariPlan.startDate || throughKey<masariPlan.startDate) return {entries, ptrSurah, ptrAyah, ayahsDone, daysDone, finished};
+  const perDay = Math.max(1, parseInt(masariPlan.ayahsPerDay)||3);
+  const endSurah = masariPlan.endSurah||114;
+  const memoDays = masariPlan.memoDays||[6,0,1,2,3,4];
+  const reviewDays = masariPlan.reviewDays||[5];
+  let cur = new Date(masariPlan.startDate+'T00:00:00');
+  const through = new Date(throughKey+'T00:00:00');
+  let pendingChunk = null;
+  let weekChunks = [];
+  let guard=0;
+  while(cur<=through && guard++<80000){
+    const key = fmtDate(cur);
+    const dow = cur.getDay();
+    if(msIsPaused(key)){
+      entries.push({date:key, type:'paused'});
+    } else if(finished){
+      entries.push({date:key, type:'complete'});
+    } else if(reviewDays.includes(dow)){
+      entries.push({date:key, type:'review', chunks:weekChunks.slice()});
+      if(masariProgress[key]){ daysDone++; weekChunks=[]; }
+    } else if(memoDays.includes(dow)){
+      if(ptrSurah>endSurah){
+        finished=true;
+        entries.push({date:key, type:'complete'});
+      } else {
+        if(!pendingChunk) pendingChunk = msDrawChunk(ptrSurah, ptrAyah, perDay);
+        entries.push({date:key, type:'memo', chunk:pendingChunk});
+        if(masariProgress[key]){
+          daysDone++; ayahsDone += (pendingChunk.to-pendingChunk.from+1);
+          ptrSurah=pendingChunk.advSurah; ptrAyah=pendingChunk.advAyah;
+          weekChunks.push(pendingChunk);
+          pendingChunk=null;
+        }
+      }
+    } else {
+      entries.push({date:key, type:'off'});
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  return {entries, ptrSurah, ptrAyah, ayahsDone, daysDone, finished};
+}
+function msBuildSchedule(throughKey){ return msSimulate(throughKey).entries; }
+function msChunkText(c){ return `سورة ${msSurahName(c.surah)} — من الآية ${c.from} إلى الآية ${c.to}`; }
+function msEntryRangeText(e){
+  if(e.type==='memo') return msChunkText(e.chunk);
+  if(e.type==='review') return e.chunks.length ? 'مراجعة شاملة لكل ما تم حفظه فعليًا منذ آخر مراجعة مكتملة:\n'+e.chunks.map(msChunkText).join('\n') : 'مراجعة شاملة (لا يوجد حفظ جديد مكتمل بعد)';
+  if(e.type==='paused') return 'الخطة متوقفة مؤقتًا';
+  if(e.type==='off') return 'يوم راحة — لا حفظ ولا مراجعة اليوم';
+  if(e.type==='complete') return 'تم ختم القرآن الكريم — يمكنك بدء ختمة جديدة من إعدادات المسار';
+  return '';
+}
+function msEntryIcon(type){ return type==='memo'?'📖':type==='review'?'🔁':type==='paused'?'⏸':type==='off'?'🌙':'🎉'; }
+function msEntryIsDone(dateKey){ return !!masariProgress[dateKey]; }
+function msMarkDone(dateKey, done){
+  if(done) masariProgress[dateKey]=todayKey();
+  else delete masariProgress[dateKey];
+  persist();
+}
+
+/* current pointer position "as of today" — i.e. after simulating every day up to today. */
+function msCurrentPosition(){
+  const today = todayKey();
+  const sim = msSimulate(today<masariPlan.startDate?masariPlan.startDate:today);
+  return {ptrSurah:sim.ptrSurah, ptrAyah:sim.ptrAyah, ayahsDone:sim.ayahsDone, daysDone:sim.daysDone, finished:sim.finished};
+}
+/* projects a finish date assuming no further pauses and no more skipped days, from the current pointer */
+function msProjectFinish(){
+  const pos = msCurrentPosition();
+  if(pos.finished || pos.ptrSurah>(masariPlan.endSurah||114)) return {finished:true};
+  const perDay = Math.max(1, parseInt(masariPlan.ayahsPerDay)||3);
+  const memoDaysPerWeek = Math.max(1, (masariPlan.memoDays||[]).length);
+  const reviewDaysPerWeek = Math.max(0, (masariPlan.reviewDays||[]).length);
+  let remaining=0;
+  for(let s=pos.ptrSurah; s<=(masariPlan.endSurah||114); s++){
+    remaining += (s===pos.ptrSurah) ? (msSurahAyahCount(s)-pos.ptrAyah+1) : msSurahAyahCount(s);
+  }
+  const memoDaysNeeded = Math.ceil(remaining/perDay);
+  const calendarDaysNeeded = Math.ceil(memoDaysNeeded*7/memoDaysPerWeek);
+  const d = new Date(); d.setDate(d.getDate()+calendarDaysNeeded);
+  return {finished:false, remaining, memoDaysNeeded, finishDate: fmtDate(d)};
+}
+
+/* ---- range control (mirrors the finance one, own state) ---- */
+let msRangeMode='month', msRangeAnchor=new Date(), msCustomFrom=null, msCustomTo=null;
+function computeMsRange(){
+  if(msRangeMode==='custom' && msCustomFrom && msCustomTo) return {start:msCustomFrom, end:msCustomTo};
+  const d=new Date(msRangeAnchor);
+  if(msRangeMode==='week'){ const dow=d.getDay(); const s=new Date(d); s.setDate(d.getDate()-dow); const e=new Date(s); e.setDate(s.getDate()+6); return {start:fmtDate(s), end:fmtDate(e)}; }
+  if(msRangeMode==='month'){ const s=new Date(d.getFullYear(),d.getMonth(),1); const e=new Date(d.getFullYear(),d.getMonth()+1,0); return {start:fmtDate(s), end:fmtDate(e)}; }
+  return {start: masariPlan.startDate||'0000-01-01', end: todayKey()};
+}
+function msRangeNavLabel(){
+  const d=new Date(msRangeAnchor);
+  if(msRangeMode==='week'){ const r=computeMsRange(); const s=new Date(r.start+'T00:00:00'), e=new Date(r.end+'T00:00:00'); return `${MONTHS[s.getMonth()].slice(0,3)} ${s.getDate()} – ${MONTHS[e.getMonth()].slice(0,3)} ${e.getDate()}, ${e.getFullYear()}`; }
+  if(msRangeMode==='month') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return '';
+}
+function msShiftRange(dir){
+  const d=new Date(msRangeAnchor);
+  if(msRangeMode==='week') d.setDate(d.getDate()+dir*7);
+  else if(msRangeMode==='month') d.setMonth(d.getMonth()+dir);
+  msRangeAnchor=d; renderRangeNavMs(); renderMasariAll();
+}
+function renderRangeNavMs(){
+  const el=document.getElementById('msRangeNav');
+  if(['week','month'].includes(msRangeMode)){ el.style.display='flex'; document.getElementById('msRangeNavLabel').textContent=msRangeNavLabel(); }
+  else el.style.display='none';
+}
+document.getElementById('msRangeNavPrev').addEventListener('click', ()=>msShiftRange(-1));
+document.getElementById('msRangeNavNext').addEventListener('click', ()=>msShiftRange(1));
+document.querySelectorAll('.range-chip[data-ms-range]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.range-chip[data-ms-range]').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); msRangeMode=chip.dataset.msRange; msRangeAnchor=new Date();
+    document.getElementById('msRangeCustomLabel').textContent='';
+    renderRangeNavMs(); renderMasariAll();
+  });
+});
+document.getElementById('msCustomRangeChip').addEventListener('click', ()=>{
+  const f=prompt('From date (YYYY-MM-DD):', computeMsRange().start);
+  if(!f) return;
+  const t=prompt('To date (YYYY-MM-DD):', todayKey());
+  if(!t) return;
+  msCustomFrom=f; msCustomTo=t; msRangeMode='custom';
+  document.querySelectorAll('.range-chip[data-ms-range]').forEach(c=>c.classList.remove('active'));
+  document.getElementById('msRangeCustomLabel').textContent = `${f} → ${t}`;
+  renderRangeNavMs(); renderMasariAll();
+});
+
+/* ---- tabs ---- */
+let msCurrentTab='overview';
+document.getElementById('msTabbar').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#msTabbar button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  msCurrentTab=b.dataset.msTab;
+  ['overview','log','settings'].forEach(t=>{ document.getElementById('ms-tab-'+t).style.display=(t===msCurrentTab)?'block':'none'; });
+  renderMasariAll();
+});
+
+/* ---- pause / resume ---- */
+function msTogglePause(){
+  const list = masariPlan.pausedIntervals = masariPlan.pausedIntervals||[];
+  const open = list.find(p=>p.to===null);
+  if(open){
+    // resuming makes TODAY active again — the paused range ends yesterday (if paused and
+    // resumed on the same day, from>to, so the interval matches nothing: a correct no-op).
+    const y=new Date(); y.setDate(y.getDate()-1); open.to = fmtDate(y);
+    showToast('Path resumed');
+  }
+  else{ list.push({from: todayKey(), to:null}); showToast('Path paused'); }
+  persist(); renderMasariAll();
+}
+document.getElementById('msPauseBtn').addEventListener('click', msTogglePause);
+
+/* ---- overview ---- */
+function renderMasariOverview(){
+  const pos = msCurrentPosition();
+  const pct = (pos.ayahsDone / QURAN_TOTAL_AYAHS * 100);
+  document.getElementById('msPct').innerHTML = `<span class="cur">%</span>${pct.toFixed(1)}`;
+  document.getElementById('msAyahsDone').textContent = `${pos.ayahsDone} / ${QURAN_TOTAL_AYAHS}`;
+  document.getElementById('msDaysDone').textContent = pos.daysDone;
+
+  const paused = msIsPaused(todayKey());
+  document.getElementById('msPauseBtn').textContent = paused ? '▶ Resume path' : '⏸ Pause path';
+  document.getElementById('msPauseBtn').classList.toggle('income', paused);
+  document.getElementById('msPauseBtn').classList.toggle('transfer', !paused);
+
+  document.getElementById('msTodayDateLabel').textContent = `(${todayKey()})`;
+  const todayEntries = msBuildSchedule(todayKey());
+  const todayEntry = todayEntries.length ? todayEntries[todayEntries.length-1] : null;
+  const tCard = document.getElementById('msTodayCard');
+  if(!todayEntry){ tCard.innerHTML = '<div class="empty-hint">Set a start date in Path Settings to begin</div>'; }
+  else{
+    const done = msEntryIsDone(todayEntry.date);
+    const badge = todayEntry.type==='memo' ? 'حفظ جديد' : todayEntry.type==='review' ? 'مراجعة شاملة' : todayEntry.type==='paused' ? 'متوقف' : todayEntry.type==='off' ? 'يوم راحة' : 'اكتمل الختم';
+    tCard.innerHTML = `<div class="tx-row" style="border:none; padding:0;">
+      <div class="tx-icon">${msEntryIcon(todayEntry.type)}</div>
+      <div class="tx-info"><div class="tn">${badge}</div><div class="ts" style="white-space:pre-line;">${msEntryRangeText(todayEntry)}</div></div>
+      ${todayEntry.type==='memo'||todayEntry.type==='review' ? `<button class="btn ${done?'solid':''} small" id="msTodayDoneBtn">${done?'✓ Done':'Mark done'}</button>` : ''}
+    </div>`;
+    const btn = document.getElementById('msTodayDoneBtn');
+    if(btn) btn.addEventListener('click', ()=>{ msMarkDone(todayEntry.date, !msEntryIsDone(todayEntry.date)); renderMasariAll(); });
+  }
+
+  const proj = msProjectFinish();
+  document.getElementById('msProjection').innerHTML = proj.finished
+    ? `🎉 Qur'an memorization complete! You can start a fresh cycle from Path Settings.`
+    : `Currently at <b>سورة ${msSurahName(pos.ptrSurah)} — الآية ${pos.ptrAyah}</b>. About <b>${proj.remaining}</b> ayahs left, roughly <b>${proj.memoDaysNeeded}</b> memorization days.
+       At the current pace, projected finish: <b>${proj.finishDate}</b> (assuming no further pauses).`;
+
+  const posEl = document.getElementById('msPositionBars');
+  const surahPct = Math.round(((pos.ptrAyah-1)/Math.max(1,msSurahAyahCount(pos.ptrSurah)))*100);
+  const overallPct = Math.round(pct);
+  posEl.innerHTML = `
+    <div class="acct-bar-row"><div class="acct-bar-top"><div class="an">📗 ${msSurahName(pos.ptrSurah)} (current surah)</div><div class="av">${pos.ptrAyah-1}/${msSurahAyahCount(pos.ptrSurah)}</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${Math.max(2,surahPct)}%;"></div></div></div>
+    <div class="acct-bar-row" style="margin-top:14px;"><div class="acct-bar-top"><div class="an">📘 Whole Qur'an</div><div class="av">${overallPct}%</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${Math.max(2,overallPct)}%;"></div></div></div>`;
+
+  const recEl = document.getElementById('msRecent');
+  const recent = todayEntries.slice(-7).reverse();
+  recEl.innerHTML = recent.length ? '' : '<div class="empty-hint">No days yet</div>';
+  recent.forEach(e=>{
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    const done = e.type==='memo'||e.type==='review' ? msEntryIsDone(e.date) : false;
+    row.innerHTML = `<div class="list-icon">${msEntryIcon(e.type)}</div>
+      <div class="ltxt"><div class="ln1">${e.date} — ${WEEKDAYS[new Date(e.date+'T00:00:00').getDay()]}</div><div class="ln2">${e.type==='memo'?msChunkText(e.chunk):e.type==='review'?'مراجعة شاملة':e.type==='paused'?'متوقف':e.type==='off'?'يوم راحة':'اكتمل'}</div></div>
+      <div class="lval">${(e.type==='memo'||e.type==='review') ? (done?'<span class="badge normal">✓ تم</span>':'<span class="badge off">لم يتم</span>') : ''}</div>`;
+    recEl.appendChild(row);
+  });
+}
+
+/* ---- log tab: week numbering helpers ---- */
+function msIsoWeekNumber(dateKey){
+  const d = new Date(dateKey+'T00:00:00');
+  d.setDate(d.getDate() + 4 - (d.getDay()||7)); // move to this ISO week's Thursday
+  const isoYear = d.getFullYear();
+  const yearStart = new Date(isoYear,0,1);
+  const wk = Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return {week:wk, year:isoYear};
+}
+function msDaysBetween(fromKey, toKey){
+  const a=new Date(fromKey+'T00:00:00'), b=new Date(toKey+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function msPlanWeekNumber(wkKey){
+  if(!masariPlan.startDate) return null;
+  const startD = new Date(masariPlan.startDate+'T00:00:00');
+  const startWkStart = new Date(startD); startWkStart.setDate(startD.getDate()-startD.getDay());
+  const diff = msDaysBetween(fmtDate(startWkStart), wkKey);
+  return Math.floor(diff/7)+1;
+}
+function msCurrentWeekKey(){
+  const d = new Date(); d.setDate(d.getDate()-d.getDay());
+  return fmtDate(d);
+}
+
+/* ---- log tab: view mode ---- */
+let msLogViewMode='list', msCalAnchor=new Date();
+document.getElementById('msLogViewTabs').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#msLogViewTabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  msLogViewMode = b.dataset.v;
+  document.getElementById('msLogView').style.display = msLogViewMode==='list' ? 'block' : 'none';
+  document.getElementById('msLogCalendarView').style.display = msLogViewMode==='calendar' ? 'block' : 'none';
+  document.getElementById('msCalNav').style.display = msLogViewMode==='calendar' ? 'flex' : 'none';
+  renderMasariLog();
+});
+document.getElementById('msCalNavPrev').addEventListener('click', ()=>{ msCalAnchor.setMonth(msCalAnchor.getMonth()-1); renderMasariLogCalendar(); });
+document.getElementById('msCalNavNext').addEventListener('click', ()=>{ msCalAnchor.setMonth(msCalAnchor.getMonth()+1); renderMasariLogCalendar(); });
+
+function renderMasariLog(){
+  if(msLogViewMode==='calendar') renderMasariLogCalendar();
+  else renderMasariLogList();
+}
+
+/* ---- log tab: list view ---- */
+function renderMasariLogList(){
+  const el = document.getElementById('msLogView');
+  const r = computeMsRange();
+  const entries = msBuildSchedule(r.end<masariPlan.startDate?masariPlan.startDate:r.end).filter(e=>e.date>=r.start && e.date<=r.end);
+  if(!entries.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No scheduled days in this period</div></div>'; return; }
+  el.innerHTML='';
+  const byWeek = {};
+  const order = [];
+  entries.forEach(e=>{
+    const d=new Date(e.date+'T00:00:00'); const dow=d.getDay();
+    const wkStart = new Date(d); wkStart.setDate(d.getDate()-dow);
+    const wkKey = fmtDate(wkStart);
+    if(!byWeek[wkKey]){ byWeek[wkKey]=[]; order.push(wkKey); }
+    byWeek[wkKey].push(e);
+  });
+  // oldest week first, current/upcoming weeks last — so the week you actually need
+  // to act on is never buried below a stack of far-future weeks.
+  order.sort((a,b)=>a.localeCompare(b));
+  const curWkKey = msCurrentWeekKey();
+  order.forEach(wkKey=>{
+    const list = byWeek[wkKey].slice().sort((a,b)=>a.date.localeCompare(b.date));
+    const head=document.createElement('div'); head.className='group-head'; head.style.cursor='default';
+    const doneCount = list.filter(e=>(e.type==='memo'||e.type==='review') && msEntryIsDone(e.date)).length;
+    const todoCount = list.filter(e=>e.type==='memo'||e.type==='review').length;
+    const iso = msIsoWeekNumber(wkKey);
+    const planWk = msPlanWeekNumber(wkKey);
+    const isCurrent = wkKey===curWkKey;
+    head.innerHTML = `<div class="gh-l">Week of ${wkKey}${isCurrent?' <span class="badge normal">Current week</span>':''}
+        <span style="color:var(--text-dim2); font-weight:500; font-size:11px; display:block; margin-top:2px;">Plan week #${planWk} · Gregorian week ${iso.week}/52, ${iso.year}</span></div>
+      <div class="gh-r"><span class="gh-count">${doneCount}/${todoCount} done</span></div>`;
+    el.appendChild(head);
+    const body=document.createElement('div'); body.className='group-body';
+    list.forEach(e=>{
+      const row=document.createElement('div'); row.className='tx-row';
+      const dow = new Date(e.date+'T00:00:00').getDay();
+      const done = (e.type==='memo'||e.type==='review') ? msEntryIsDone(e.date) : false;
+      const icon = msEntryIcon(e.type);
+      const title = e.type==='memo' ? msChunkText(e.chunk) : e.type==='review' ? (e.chunks && e.chunks.length ? 'مراجعة شاملة:\n'+e.chunks.map(msChunkText).join('\n') : 'مراجعة شاملة (لا يوجد حفظ مكتمل بعد)') : e.type==='paused' ? 'الخطة متوقفة' : e.type==='off' ? 'يوم راحة' : 'اكتمل ختم القرآن';
+      row.innerHTML = `<div class="tx-icon">${icon}</div>
+        <div class="tx-info"><div class="tn">${WEEKDAYS[dow]}, ${e.date}</div><div class="ts" style="white-space:pre-line;">${title}${done?' · تم في '+masariProgress[e.date]:''}</div></div>
+        ${(e.type==='memo'||e.type==='review') ? `<button class="btn small ${done?'solid':'ghost'}" data-msdone="${e.date}">${done?'✓ تم':'تحديد كمكتمل'}</button>` : ''}`;
+      body.appendChild(row);
+    });
+    el.appendChild(body);
+  });
+  el.querySelectorAll('[data-msdone]').forEach(b=>b.addEventListener('click', ()=>{
+    const k=b.dataset.msdone; msMarkDone(k, !msEntryIsDone(k)); renderMasariAll();
+  }));
+}
+
+/* ---- log tab: calendar-grid view ---- */
+function renderMasariLogCalendar(){
+  const el = document.getElementById('msLogCalendarView');
+  const anchor = msCalAnchor;
+  const y = anchor.getFullYear(), m = anchor.getMonth();
+  document.getElementById('msCalNavLabel').textContent = `${MONTHS[m]} ${y}`;
+  const monthStart = new Date(y,m,1), monthEnd = new Date(y,m+1,0);
+  const monthEndKey = fmtDate(monthEnd);
+  const entriesByDate = {};
+  if(masariPlan.startDate && monthEndKey>=masariPlan.startDate){
+    msBuildSchedule(monthEndKey).forEach(e=>{ if(e.date>=fmtDate(monthStart) && e.date<=monthEndKey) entriesByDate[e.date]=e; });
+  }
+  const todayK = todayKey();
+  const firstDow = monthStart.getDay();
+  const daysInMonth = monthEnd.getDate();
+  el.innerHTML = '';
+  const grid = document.createElement('div'); grid.className='ms-cal-grid';
+  MS_DAY_ABBR.forEach((n,i)=>{ const h=document.createElement('div'); h.className='ms-cal-dow'; h.textContent=n; grid.appendChild(h); });
+  for(let i=0;i<firstDow;i++){ const c=document.createElement('div'); c.className='ms-cal-cell empty'; grid.appendChild(c); }
+  for(let day=1; day<=daysInMonth; day++){
+    const dateKey = fmtDate(new Date(y,m,day));
+    const e = entriesByDate[dateKey];
+    const cell = document.createElement('div'); cell.className='ms-cal-cell';
+    if(dateKey===todayK) cell.classList.add('today');
+    let inner = `<div class="ms-cal-daynum">${day}</div>`;
+    if(e){
+      const done = (e.type==='memo'||e.type==='review') ? msEntryIsDone(e.date) : false;
+      if(e.type==='memo'||e.type==='review') cell.classList.add(done?'done':'pending');
+      if(e.type==='paused') cell.classList.add('paused-day');
+      if(e.type==='off') cell.classList.add('off-day');
+      const txt = e.type==='memo' ? `${msSurahName(e.chunk.surah)} ${e.chunk.from}-${e.chunk.to}` : e.type==='review' ? 'مراجعة' : e.type==='paused' ? 'متوقف' : e.type==='off' ? 'راحة' : 'ختم 🎉';
+      inner += `<div class="ms-cal-icon">${msEntryIcon(e.type)}</div><div class="ms-cal-txt">${txt}</div>`;
+      if(e.type==='memo'||e.type==='review') cell.dataset.msdone = e.date;
+    }
+    cell.innerHTML = inner;
+    grid.appendChild(cell);
+  }
+  el.appendChild(grid);
+  el.querySelectorAll('[data-msdone]').forEach(c=>c.addEventListener('click', ()=>{
+    const k=c.dataset.msdone; msMarkDone(k, !msEntryIsDone(k)); renderMasariAll();
+  }));
+}
+
+/* ---- settings tab ---- */
+function populateMsStartSurahSelect(){
+  const sel = document.getElementById('msSetStartSurah');
+  sel.innerHTML = QURAN_SURAHS.map((s,i)=>`<option value="${i+1}">${i+1}. ${s[0]} (${s[1]} آية)</option>`).join('');
+}
+function msRenderDayPicker(containerId, selectedArr){
+  const el = document.getElementById(containerId);
+  el.innerHTML = MS_DAY_ABBR.map((name,dow)=>`<button type="button" data-dow="${dow}" class="${(selectedArr||[]).includes(dow)?'active':''}">${name}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>{ b.classList.toggle('active'); renderMsSettingsSummary(); }));
+}
+function msReadDayPicker(containerId){
+  return [...document.querySelectorAll('#'+containerId+' button.active')].map(b=>parseInt(b.dataset.dow)).sort();
+}
+function renderMsSettingsSummary(){
+  const perDay = parseInt(document.getElementById('msSetAyahsPerDay').value)||3;
+  const surah = parseInt(document.getElementById('msSetStartSurah').value)||2;
+  const ayah = parseInt(document.getElementById('msSetStartAyah').value)||1;
+  const memoDays = msReadDayPicker('msMemoDaysPicker');
+  const reviewDays = msReadDayPicker('msReviewDaysPicker');
+  const memoTxt = memoDays.length ? memoDays.map(d=>MS_DAY_ABBR[d]).join('، ') : 'لا يوجد';
+  const reviewTxt = reviewDays.length ? reviewDays.map(d=>MS_DAY_ABBR[d]).join('، ') : 'لا يوجد';
+  document.getElementById('msSettingsSummary').textContent =
+    `يبدأ من سورة ${msSurahName(surah)} — الآية ${ayah}, بمعدل ${perDay} آية/يوم. أيام الحفظ: ${memoTxt}. أيام المراجعة الشاملة: ${reviewTxt}. أي يوم غير هذا = يوم راحة تلقائي. المحتوى ما بيتقدّم إلا لما تحدد اليوم "تم" فعليًا — إذا فوّتت يوم، نفس المقطع بيرجع يطلعلك بأول يوم حفظ جاي، وما بينضاف على الأسبوع الجاي ولا بيضيع.`;
+}
+function renderMasariSettings(){
+  populateMsStartSurahSelect();
+  document.getElementById('msSetStartDate').value = masariPlan.startDate;
+  document.getElementById('msSetAyahsPerDay').value = masariPlan.ayahsPerDay;
+  document.getElementById('msSetStartSurah').value = masariPlan.startSurah;
+  document.getElementById('msSetStartAyah').value = masariPlan.startAyah;
+  msRenderDayPicker('msMemoDaysPicker', masariPlan.memoDays);
+  msRenderDayPicker('msReviewDaysPicker', masariPlan.reviewDays);
+  renderMsSettingsSummary();
+
+  const hist = document.getElementById('msPauseHistory');
+  const list = masariPlan.pausedIntervals||[];
+  hist.innerHTML = list.length ? '' : '<div class="empty-hint">No pauses yet</div>';
+  list.slice().reverse().forEach(p=>{
+    const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
+    row.innerHTML = `<div class="list-icon">⏸</div><div class="ltxt"><div class="ln1">${p.from} → ${p.to||'ongoing'}</div></div>`;
+    hist.appendChild(row);
+  });
+}
+['msSetAyahsPerDay','msSetStartSurah','msSetStartAyah'].forEach(id=>document.getElementById(id).addEventListener('input', renderMsSettingsSummary));
+document.getElementById('msSaveSettingsBtn').addEventListener('click', ()=>{
+  const memoDays = msReadDayPicker('msMemoDaysPicker');
+  const reviewDays = msReadDayPicker('msReviewDaysPicker');
+  masariPlan.startDate = document.getElementById('msSetStartDate').value || todayKey();
+  masariPlan.memoDays = memoDays;
+  masariPlan.reviewDays = reviewDays;
+  masariPlan.ayahsPerDay = Math.max(1, parseInt(document.getElementById('msSetAyahsPerDay').value)||3);
+  masariPlan.startSurah = parseInt(document.getElementById('msSetStartSurah').value)||2;
+  masariPlan.startAyah = Math.max(1, parseInt(document.getElementById('msSetStartAyah').value)||1);
+  persist(); renderMasariAll(); showToast('Path settings saved');
+});
+document.getElementById('msResetProgressBtn').addEventListener('click', ()=>{
+  if(!confirm('Reset all progress and pause history? The path settings themselves stay as configured.')) return;
+  masariProgress = {}; masariPlan.pausedIntervals = [];
+  persist(); renderMasariAll(); showToast('Progress reset');
+});
+
+/* ---- render all ---- */
+function renderMasariAll(){
+  if(msCurrentTab==='overview') renderMasariOverview();
+  else if(msCurrentTab==='log') renderMasariLog();
+  else if(msCurrentTab==='settings') renderMasariSettings();
+}
+
 /* ---------------- persist ---------------- */
 function persist(){
   saveLocal();
@@ -3143,6 +4264,15 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(kfRows), 'KafalatPayments');
   const dpRows = debtPlans.map(p=>({id:p.id, name:p.name, type:p.type||'', currency:p.currency||'AED', purchaseDate:p.purchaseDate||'', note:p.note||'', scheduleJson:JSON.stringify(p.schedule||[])}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dpRows), 'DebtPlans');
+  const masariPlanRows = [
+    {key:'startDate', value:masariPlan.startDate}, {key:'ayahsPerDay', value:masariPlan.ayahsPerDay},
+    {key:'startSurah', value:masariPlan.startSurah}, {key:'startAyah', value:masariPlan.startAyah}, {key:'endSurah', value:masariPlan.endSurah},
+    {key:'memoDaysJson', value:JSON.stringify(masariPlan.memoDays||[])}, {key:'reviewDaysJson', value:JSON.stringify(masariPlan.reviewDays||[])},
+    {key:'pausedIntervalsJson', value:JSON.stringify(masariPlan.pausedIntervals||[])}
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masariPlanRows), 'MasariPlan');
+  const masariProgressRows = Object.entries(masariProgress).map(([date,doneAt])=>({date,doneAt}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masariProgressRows), 'MasariProgress');
   return wb;
 }
 function stateFromWorkbook(wb){
@@ -3171,6 +4301,16 @@ function stateFromWorkbook(wb){
     id:r.id, name:r.name, type:r.type||'', currency:r.currency||'AED', purchaseDate:r.purchaseDate||'', note:r.note||'',
     schedule: (()=>{ try{ return JSON.parse(r.scheduleJson||'[]').map(x=>({date:x.date, amount:parseFloat(x.amount)||0, paid:!!x.paid})); }catch(e){ return []; } })()
   })) : [];
+  if(wb.Sheets['MasariPlan']){
+    const s={}; XLSX.utils.sheet_to_json(wb.Sheets['MasariPlan']).forEach(r=>{ s[r.key]=r.value; });
+    masariPlan = { startDate:s.startDate||todayKey(), ayahsPerDay:parseInt(s.ayahsPerDay)||3, startSurah:parseInt(s.startSurah)||2,
+      startAyah:parseInt(s.startAyah)||1, endSurah:parseInt(s.endSurah)||114,
+      memoDays: (()=>{ try{ return JSON.parse(s.memoDaysJson||'[]'); }catch(e){ return [6,0,1,2,3,4]; } })(),
+      reviewDays: (()=>{ try{ return JSON.parse(s.reviewDaysJson||'[]'); }catch(e){ return [5]; } })(),
+      pausedIntervals: (()=>{ try{ return JSON.parse(s.pausedIntervalsJson||'[]'); }catch(e){ return []; } })() };
+  }
+  masariProgress = {};
+  if(wb.Sheets['MasariProgress']) XLSX.utils.sheet_to_json(wb.Sheets['MasariProgress']).forEach(r=>{ if(r.date) masariProgress[r.date]=r.doneAt||todayKey(); });
 }
 async function writeToLinkedFile(){
   try{
@@ -3241,7 +4381,7 @@ document.getElementById('excelFileInput').addEventListener('change', (e)=>{
 });
 
 document.getElementById('exportJsonBtn').addEventListener('click', ()=>{
-  const backup={accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans, exportedAt:new Date().toISOString()};
+  const backup={accounts, categories, tx, transfers, fxRates, recurring, attDays, attSettings, kfSponsors, kfPayments, debtPlans, masariPlan, masariProgress, exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(backup,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=`raseed-backup-${todayKey()}.json`;
@@ -3257,10 +4397,12 @@ document.getElementById('jsonFileInput').addEventListener('change', (e)=>{
       const data=JSON.parse(reader.result);
       if(data.accounts) accounts=data.accounts; if(data.categories) categories=data.categories;
       if(data.tx) tx=data.tx; if(data.transfers) transfers=data.transfers; if(data.fxRates) fxRates=data.fxRates;
+      if(data.recurring) recurring=data.recurring;
+      if(data.masariPlan) masariPlan=data.masariPlan; if(data.masariProgress) masariProgress=data.masariProgress;
       if(data.attDays) attDays=data.attDays; if(data.attSettings) attSettings=data.attSettings;
       if(data.kfSponsors) kfSponsors=data.kfSponsors; if(data.kfPayments) kfPayments=data.kfPayments;
       if(data.debtPlans) debtPlans=data.debtPlans;
-      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); if(appView==='kafalat') renderKfAll(); if(appView==='aqsati') renderAqAll(); showToast('Imported');
+      persist(); closeModal('storageModal'); renderAll(); if(appView==='attendance') renderAttAll(); if(appView==='kafalat') renderKfAll(); if(appView==='aqsati') renderAqAll(); if(appView==='masari') renderMasariAll(); showToast('Imported');
     } catch(err){ showToast('Invalid file'); }
   };
   reader.readAsText(file);
@@ -3274,7 +4416,7 @@ let gsSpreadsheetId = localStorage.getItem(GS_LS.sheetId) || GS_SPREADSHEET_ID_D
 document.getElementById('gsClientId').value = gsClientId;
 document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
-const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans'];
+const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans','MasariPlan','MasariProgress'];
 const GS_HEADERS = {
   Accounts: ['id','name','currency','balance','date','included','icon'],
   Categories: ['id','name','icon','type'],
@@ -3285,7 +4427,9 @@ const GS_HEADERS = {
   AttendanceSettings: ['key','value'],
   KafalatSponsors: ['id','name'],
   KafalatPayments: ['id','label','date','caseValue','currency','note','splitsJson'],
-  DebtPlans: ['id','name','type','currency','purchaseDate','note','scheduleJson']
+  DebtPlans: ['id','name','type','currency','purchaseDate','note','scheduleJson'],
+  MasariPlan: ['key','value'],
+  MasariProgress: ['date','doneAt']
 };
 function gsRowsFromState(){
   return {
@@ -3298,7 +4442,14 @@ function gsRowsFromState(){
     AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])],
     KafalatSponsors: [GS_HEADERS.KafalatSponsors, ...kfSponsors.map(s=>[s.id,s.name])],
     KafalatPayments: [GS_HEADERS.KafalatPayments, ...kfPayments.map(p=>[p.id,p.label,p.date,p.caseValue,p.currency,p.note||'',JSON.stringify(p.splits||[])])],
-    DebtPlans: [GS_HEADERS.DebtPlans, ...debtPlans.map(p=>[p.id,p.name,p.type||'',p.currency||'AED',p.purchaseDate||'',p.note||'',JSON.stringify(p.schedule||[])])]
+    DebtPlans: [GS_HEADERS.DebtPlans, ...debtPlans.map(p=>[p.id,p.name,p.type||'',p.currency||'AED',p.purchaseDate||'',p.note||'',JSON.stringify(p.schedule||[])])],
+    MasariPlan: [GS_HEADERS.MasariPlan, ...Object.entries({
+      startDate: masariPlan.startDate, ayahsPerDay: masariPlan.ayahsPerDay, startSurah: masariPlan.startSurah,
+      startAyah: masariPlan.startAyah, endSurah: masariPlan.endSurah,
+      memoDaysJson: JSON.stringify(masariPlan.memoDays||[]), reviewDaysJson: JSON.stringify(masariPlan.reviewDays||[]),
+      pausedIntervalsJson: JSON.stringify(masariPlan.pausedIntervals||[])
+    })],
+    MasariProgress: [GS_HEADERS.MasariProgress, ...Object.entries(masariProgress).map(([date,doneAt])=>[date,doneAt])]
   };
 }
 function gsObjectsFromRows(rows){
@@ -3354,7 +4505,7 @@ async function gsPush(){
       method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
       body: JSON.stringify({ valueInputOption:'RAW', data: SHEETS_TABS.map(t=>({range:t+'!A1', values: rows[t]})) })
     });
-    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans});
+    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans, masariPlan, masariProgress});
   }catch(err){ console.error(err); showToast('Could not sync with Google Sheets — data kept locally'); }
 }
 async function gsPull(silent){
@@ -3364,7 +4515,7 @@ async function gsPull(silent){
     const res = await fetch(url, { headers:{Authorization:'Bearer '+gsAccessToken} });
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
-    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR] = data.valueRanges;
+    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR, mpVR, mgVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE'}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0}));
@@ -3380,10 +4531,21 @@ async function gsPull(silent){
       splits: (()=>{ try{ return JSON.parse(r.splitsJson||'[]'); }catch(e){ return []; } })() }));
     const newDebtPlans = gsObjectsFromRows(dpVR.values).map(r=>({ id:r.id, name:r.name, type:r.type||'', currency:r.currency||'AED', purchaseDate:r.purchaseDate||'', note:r.note||'',
       schedule: (()=>{ try{ return JSON.parse(r.scheduleJson||'[]').map(x=>({date:x.date, amount:parseFloat(x.amount)||0, paid:!!x.paid})); }catch(e){ return []; } })() }));
-    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments, debtPlans:newDebtPlans});
+    let newMasariPlan = { startDate: todayKey(), memoDays:[6,0,1,2,3,4], reviewDays:[5], ayahsPerDay:3, startSurah:2, startAyah:1, endSurah:114, pausedIntervals:[] };
+    const mpRows = gsObjectsFromRows(mpVR.values);
+    if(mpRows.length){
+      const s={}; mpRows.forEach(r=>{ s[r.key]=r.value; });
+      newMasariPlan = { startDate:s.startDate||todayKey(), ayahsPerDay:parseInt(s.ayahsPerDay)||3, startSurah:parseInt(s.startSurah)||2,
+        startAyah:parseInt(s.startAyah)||1, endSurah:parseInt(s.endSurah)||114,
+        memoDays: (()=>{ try{ return JSON.parse(s.memoDaysJson||'[]'); }catch(e){ return [6,0,1,2,3,4]; } })(),
+        reviewDays: (()=>{ try{ return JSON.parse(s.reviewDaysJson||'[]'); }catch(e){ return [5]; } })(),
+        pausedIntervals: (()=>{ try{ return JSON.parse(s.pausedIntervalsJson||'[]'); }catch(e){ return []; } })() };
+    }
+    const newMasariProgress = {}; gsObjectsFromRows(mgVR.values).forEach(r=>{ if(r.date) newMasariProgress[r.date]=r.doneAt||todayKey(); });
+    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments, debtPlans:newDebtPlans, masariPlan:newMasariPlan, masariProgress:newMasariProgress});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
-    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments; debtPlans=newDebtPlans;
+    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments; debtPlans=newDebtPlans; masariPlan=newMasariPlan; masariProgress=newMasariProgress;
     gsLastSnapshot = incomingSnapshot;
     saveLocal();
     if(!silent) showToast('Pulled latest version from the sheet');
@@ -3391,6 +4553,7 @@ async function gsPull(silent){
     if(appView==='attendance') renderAttAll();
     if(appView==='kafalat') renderKfAll();
     if(appView==='aqsati') renderAqAll();
+    if(appView==='masari') renderMasariAll();
   }catch(err){ console.error(err); if(!silent) showToast('Could not pull from Google Sheets'); }
 }
 function startGsPolling(){ clearInterval(gsPollTimer); gsPollTimer = setInterval(()=>{ if(gsAccessToken) gsPull(true); }, 45000); }
@@ -3437,6 +4600,7 @@ function renderAll(){
   if(currentTab==='overview') renderOverview();
   else if(currentTab==='list') renderList();
   else if(currentTab==='transfers') renderTransfers();
+  else if(currentTab==='recurring') renderRecurringList();
   else if(currentTab==='accounts'){ renderAccountsTab(); renderCategoriesTab(); }
 }
 function renderSearchChip(){
@@ -3456,6 +4620,7 @@ document.getElementById('applyCustomRange').addEventListener('click', ()=>{
 });
 
 /* init */
+processRecurringDue();
 renderRangeNav();
 renderAll();
 if(FS_SUPPORTED) tryReconnect();
