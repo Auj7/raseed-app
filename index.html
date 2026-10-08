@@ -53,6 +53,9 @@
   --income:#5FB489;  --income-soft:#8FD3AE;
   --expense:#C4574A; --expense-soft:#E08A7D;
 
+  --deck-bg:rgba(19,26,23,.90);
+  --overlay-bg:rgba(5,9,8,.72);
+
   --radius:14px;
   --radius-lg:18px;
   --ease:cubic-bezier(.22,.61,.36,1);
@@ -61,6 +64,48 @@
   --font-ui:'Instrument Sans','Noto Sans Arabic',system-ui,-apple-system,'Segoe UI',sans-serif;
   --font-fig:'Instrument Serif','Noto Sans Arabic',Georgia,serif;
 }
+
+/* ---------- light mode ---------- */
+:root[data-theme="light"]{
+  --bg:#F3F5FA;
+  --surface:#FFFFFF;
+  --surface-2:#F3F6FB;
+  --surface-3:#E7ECF5;
+  --border:#DCE3F0;
+  --border-soft:#E7ECF5;
+
+  --text:#151C2C;
+  --text-dim:#5B6B88;
+  --text-dim2:#8995AC;
+
+  --brass:#2563D9;
+  --brass-soft:#1A4FAE;
+  --on-brass:#FFFFFF;
+
+  --gold:#2563D9;
+  --gold-soft:#1A4FAE;
+  --gold-tint:rgba(37,99,217,.09);
+  --gold-tint2:rgba(37,99,217,.22);
+
+  --teal-soft:#2E5FA3;
+  --income:#2F9566;  --income-soft:#1F7A51;
+  --expense:#C23B2C; --expense-soft:#A62E21;
+
+  --deck-bg:rgba(255,255,255,.88);
+  --overlay-bg:rgba(30,38,56,.42);
+  --ruled:repeating-linear-gradient(to bottom, transparent 0 27px, rgba(21,28,44,.03) 27px 28px);
+}
+:root[data-theme="light"] body{
+  background-image:
+    radial-gradient(1100px 620px at 12% -12%, rgba(37,99,217,.07), transparent 62%),
+    radial-gradient(900px 520px at 102% -4%, rgba(37,99,217,.05), transparent 58%);
+}
+:root[data-theme="light"] .brand-mark{
+  background:linear-gradient(180deg, rgba(37,99,217,.16), rgba(37,99,217,.06));
+  border:1px solid rgba(37,99,217,.3);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:var(--surface-3);}
+:root[data-theme="light"] .icon-btn:hover{color:var(--brass); border-color:rgba(37,99,217,.35); background:var(--surface-2);}
 
 /* channel accents — drawn from the same family as the chart
    palette in the script, so nothing ever clashes */
@@ -130,7 +175,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:16px
   position:sticky; top:10px; z-index:25;
   display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px;
   padding:11px 13px; margin-bottom:16px;
-  background:rgba(19,26,23,.90);
+  background:var(--deck-bg);
   -webkit-backdrop-filter:blur(18px) saturate(1.3);
   backdrop-filter:blur(18px) saturate(1.3);
   border:1px solid var(--border); border-radius:var(--radius-lg);
@@ -226,7 +271,9 @@ header{display:flex; align-items:center; justify-content:space-between; gap:16px
 }
 
 /* ---------- panels ---------- */
-.dash-grid{display:grid; grid-template-columns:1.5fr 1.05fr; gap:16px; align-items:start;}
+.dash-grid{display:flex; flex-direction:column; gap:0;}
+.dash-row-top{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; margin-bottom:16px;}
+.dash-row-top .hero-card{margin-bottom:0;}
 .panel{
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
   padding:18px 20px 20px; margin-bottom:16px;
@@ -403,7 +450,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 
 /* ---------- modals ---------- */
 .modal-overlay{
-  position:fixed; inset:0; background:rgba(5,9,8,.72); z-index:50;
+  position:fixed; inset:0; background:var(--overlay-bg); z-index:50;
   display:none; align-items:center; justify-content:center; padding:20px;
   -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
 }
@@ -435,7 +482,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .calc-amt-box .cur{font-size:12px; color:var(--text-dim); font-weight:600; letter-spacing:.5px;}
 .calc-amt-box .amt{flex:1; text-align:center; font-family:var(--font-fig); font-weight:400; font-size:34px; line-height:1.1; font-variant-numeric:tabular-nums lining-nums;}
 
-.keypad{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:8px;}
+.keypad{display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin-top:8px;}
 .keypad button{
   background:var(--surface-2); border:1px solid var(--border); border-radius:11px; color:var(--text);
   font-size:17px; font-family:var(--font-ui); font-variant-numeric:tabular-nums; padding:13px 0; cursor:pointer;
@@ -443,7 +490,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 }
 .keypad button:hover{background:var(--surface-3); border-color:var(--surface-3);}
 .keypad button:active{transform:scale(.95);}
-.keypad .save-row{grid-column:1/5;}
+.keypad button.op{background:var(--surface-3); color:var(--gold-soft); font-weight:700;}
+.keypad button.op.active{background:var(--brass); color:var(--on-brass); border-color:var(--brass);}
+.keypad .save-row{grid-column:1/6;}
 .keypad .save-row button{
   width:100%; background:var(--brass); color:var(--on-brass); font-weight:700; padding:14px 0; font-size:14px;
   border:1px solid #1E5FBE; box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
@@ -543,6 +592,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 .hc-stat-pill{font-size:11px; padding:4px 10px; border-radius:20px; background:var(--surface-2); border:1px solid var(--border-soft); color:var(--text-dim); white-space:nowrap; line-height:1.3;}
 .hc-stat-pill b{color:var(--gold-soft); font-weight:600;}
 .hc-stat-pill.warn b{color:var(--expense-soft);}
+.hc-pill-cfg{position:absolute; top:12px; inset-inline-end:14px; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--text-dim2); background:transparent; border:1px solid transparent; cursor:pointer; font-size:13px; transition:background .14s var(--ease), color .14s var(--ease), border-color .14s var(--ease);}
+.hc-pill-cfg:hover{background:var(--surface-3); color:var(--gold-soft); border-color:var(--border-soft);}
+.list-row.inactive-acct{opacity:.5;}
+.inactive-tag{font-size:10px; color:var(--text-dim2); border:1px solid var(--border-soft); border-radius:6px; padding:1px 6px; margin-inline-start:6px; vertical-align:middle;}
 .ms-cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
 .ms-cal-dow{font-size:11px; color:var(--text-dim2); text-align:center; padding-bottom:4px; font-weight:600;}
 .ms-cal-cell{border:1px solid var(--border-soft); border-radius:10px; background:var(--surface-2); padding:6px 6px 8px; min-height:74px; display:flex; flex-direction:column; gap:4px; cursor:pointer; transition:border-color .15s var(--ease), background .15s var(--ease);}
@@ -568,7 +621,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
 /* ---------- narrow screens ---------- */
 @media (max-width:1000px){
   .wrap{padding:14px 16px 60px;}
-  .dash-grid{grid-template-columns:1fr;}
+  .dash-row-top{grid-template-columns:1fr;}
   .hero-value{font-size:44px;}
   .search-input{width:100%;}
   .range-row{gap:6px;}
@@ -612,6 +665,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
       <div class="storage-pill local" id="storagePill">
         <div class="dot"></div><span id="storageLabel">Storage: local browser</span>
       </div>
+      <div class="icon-btn" id="themeToggleBtn" title="Switch light/dark mode">🌙</div>
       <div class="icon-btn" id="storageBtn" title="Storage settings">⚙</div>
     </div>
   </header>
@@ -621,6 +675,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     <div class="shelf">
       <div class="panel hub-card" id="hubFinanceCard">
         <span class="hc-spine"></span>
+        <span class="hc-pill-cfg" id="hubFinancePillsBtn" title="Choose which accounts show here">⚙</span>
         <span class="hc-glyph">💰</span>
         <span class="hc-body">
           <span class="hc-name">Raseed <em>رصيد</em></span>
@@ -717,36 +772,46 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
   <!-- ===== TAB: overview ===== -->
   <section id="tab-overview">
     <div class="dash-grid">
-      <div>
+      <!-- row 1: balance (+ its account breakdown) beside credit cards, each half the screen -->
+      <div class="dash-row-top">
         <div class="hero-card">
-          <div class="hero-label">Total Balance</div>
+          <div class="hero-label">Total Balance <span style="font-weight:400; color:var(--text-dim2); text-transform:none;">(cash &amp; bank)</span></div>
           <div class="hero-value" id="ovBalance"><span class="cur">AED</span>0.00</div>
           <div class="hero-sub-row">
             <div class="hero-sub income"><div class="hl">Income this period</div><div class="hv" id="ovIncome">0</div></div>
             <div class="hero-sub expense"><div class="hl">Expense this period</div><div class="hv" id="ovExpense">0</div></div>
           </div>
+          <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--border-soft);">
+            <div style="font-size:11px; font-weight:600; letter-spacing:.3px; color:var(--text-dim2); text-transform:uppercase; margin-bottom:10px;">By account</div>
+            <div class="acct-bars" id="acctBars"></div>
+          </div>
+          <div id="ovCreditNote" style="display:none; align-items:center; gap:6px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-soft); font-size:12.5px; color:var(--text-dim);"></div>
         </div>
-        <div class="panel">
-          <h3>Balance Trend <span id="trendRangeLabel" style="text-transform:none; font-weight:500;"></span></h3>
-          <div class="trend-box"><svg id="trendSvg" viewBox="0 0 640 170" preserveAspectRatio="none" width="100%" height="170"></svg></div>
+        <div class="panel" id="ccPanelWrap" style="display:none; margin-bottom:0;">
+          <h3>Credit Cards <span id="ccCountBadge" style="text-transform:none; font-weight:500; font-size:11px; color:var(--text-dim2);"></span></h3>
+          <div class="hero-sub-row" style="margin-bottom:16px;">
+            <div class="hero-sub expense"><div class="hl">Total owed</div><div class="hv" id="ccTotalOwed">0</div></div>
+            <div class="hero-sub income"><div class="hl">Total available</div><div class="hv" id="ccTotalAvail">0</div></div>
+          </div>
+          <div class="acct-bars" id="ccList"></div>
         </div>
-        <div class="panel">
-          <h3>Recent Activity</h3>
-          <div id="ovRecent"></div>
+        <div class="panel" id="ccEmptyWrap">
+          <h3>Credit Cards</h3>
+          <div class="empty-hint">No credit cards yet — add one from Accounts &amp; Categories and switch its type to "Credit card".</div>
         </div>
       </div>
-      <div>
-        <div class="panel">
-          <h3>Spending by Category</h3>
-          <div class="donut-wrap">
-            <div class="donut-box"><svg id="ovDonutSvg" viewBox="0 0 170 170"></svg><div class="chart-center"><div class="cv" id="ovDonutTotal">0</div><div class="cl">Total</div></div></div>
-            <div class="legend-list" id="ovLegend"></div>
-          </div>
+      <!-- row 2: full width -->
+      <div class="panel">
+        <h3>Spending by Category</h3>
+        <div class="donut-wrap">
+          <div class="donut-box"><svg id="ovDonutSvg" viewBox="0 0 170 170"></svg><div class="chart-center"><div class="cv" id="ovDonutTotal">0</div><div class="cl">Total</div></div></div>
+          <div class="legend-list" id="ovLegend"></div>
         </div>
-        <div class="panel">
-          <h3>Balance by Account</h3>
-          <div class="acct-bars" id="acctBars"></div>
-        </div>
+      </div>
+      <!-- row 3: full width -->
+      <div class="panel">
+        <h3>Recent Activity</h3>
+        <div id="ovRecent"></div>
       </div>
     </div>
   </section>
@@ -1341,16 +1406,40 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
         <option value="OTH">Other unit</option>
       </select>
     </div>
-    <div class="field"><label>Starting balance</label><input type="number" id="eaBalance" step="0.01" value="0"></div>
+    <div class="field"><label>Account type</label>
+      <span class="tab-mini" id="eaTypeTabs" style="display:flex; width:100%;">
+        <button type="button" class="active" data-t="normal" style="flex:1;">Regular account</button>
+        <button type="button" data-t="credit" style="flex:1;">Credit card</button>
+      </span>
+    </div>
+    <div class="field" id="eaBalanceField"><label id="eaBalanceLabel">Starting balance</label><input type="number" id="eaBalance" step="0.01" value="0"></div>
+    <div class="field" id="eaCreditLimitField" style="display:none;"><label>Credit limit (optional)</label><input type="number" id="eaCreditLimit" step="0.01" min="0" placeholder="e.g. 80000"></div>
     <div class="field"><label>Starting balance date</label><input type="date" id="eaDate"></div>
     <div class="field" style="display:flex; align-items:center; justify-content:space-between;">
       <label style="margin:0;">Included in total balance</label>
       <div class="switch on" id="eaIncludedSwitch"><div class="knob"></div></div>
     </div>
+    <div class="field" style="display:flex; align-items:center; justify-content:space-between;">
+      <label style="margin:0;">Active <span style="color:var(--text-dim2); font-weight:400;">(shown in menus &amp; filters)</span></label>
+      <div class="switch on" id="eaActiveSwitch"><div class="knob"></div></div>
+    </div>
     <div class="field"><label>Icon</label><div class="icon-grid" id="eaIconGrid"></div></div>
     <div class="btn-row">
       <button class="btn ghost" id="eaDeleteBtn" style="display:none;">Delete</button>
       <button class="btn solid" id="eaSaveBtn" style="flex:1;">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== hub: choose which accounts show as pills on the Raseed card ===== -->
+<div class="modal-overlay" id="hubPillsModal">
+  <div class="modal">
+    <h3>Accounts on home screen<span class="close-x" onclick="closeModal('hubPillsModal')">✕</span></h3>
+    <div class="note-box" style="margin-bottom:10px;">Total balance always shows. Pick any accounts you also want as their own pill here.</div>
+    <div class="ms-actions" style="border:none; padding:0 0 8px;"><span data-hpact="all">Select all</span><span data-hpact="clear">Clear</span></div>
+    <div id="hubPillsList" style="max-height:320px; overflow-y:auto;"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn solid" id="hubPillsSaveBtn" style="flex:1;">Save</button>
     </div>
   </div>
 </div>
@@ -1378,10 +1467,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     <div class="field"><label>Date</label><input type="date" id="entryDate"></div>
     <div class="field"><label>Note (optional)</label><input type="text" id="entryNote" placeholder="Note" list="txNoteSuggestions"><datalist id="txNoteSuggestions"></datalist></div>
     <div class="keypad" id="entryKeypad">
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button>
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k=".">.</button>
-      <button data-k="00">00</button><button data-k="0">0</button>
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button><button class="op" data-k="op" data-op="÷">÷</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button><button class="op" data-k="op" data-op="×">×</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k=".">.</button><button class="op" data-k="op" data-op="−">−</button>
+      <button data-k="00">00</button><button data-k="0">0</button><button class="op" data-k="op" data-op="%">%</button><button class="op" data-k="op" data-op="=">=</button><button class="op" data-k="op" data-op="+">+</button>
       <div class="save-row"><button id="entrySaveBtn">Save (Enter)</button></div>
     </div>
   </div>
@@ -1403,10 +1492,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     <div class="field"><label>Date</label><input type="date" id="transferDate"></div>
     <div class="field"><label>Note (optional)</label><input type="text" id="transferNote" placeholder="Note" list="transferNoteSuggestions"><datalist id="transferNoteSuggestions"></datalist></div>
     <div class="keypad" id="transferKeypad">
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button>
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k=".">.</button>
-      <button data-k="00">00</button><button data-k="0">0</button>
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="back">⌫</button><button class="op" data-k="op" data-op="÷">÷</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="clear">C</button><button class="op" data-k="op" data-op="×">×</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k=".">.</button><button class="op" data-k="op" data-op="−">−</button>
+      <button data-k="00">00</button><button data-k="0">0</button><button class="op" data-k="op" data-op="%">%</button><button class="op" data-k="op" data-op="=">=</button><button class="op" data-k="op" data-op="+">+</button>
       <div class="save-row"><button id="transferSaveBtn">Save transfer (Enter)</button></div>
     </div>
   </div>
@@ -1535,6 +1624,26 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
    RASEED v5 — Personal finance dashboard (laptop-only, English, dark grayscale)
    ============================================================ */
 
+/* ---- theme (light/dark) — a per-device display preference, kept in localStorage ---- */
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  const btn = document.getElementById('themeToggleBtn');
+  if(btn){ btn.textContent = mode==='light' ? '☀️' : '🌙'; btn.title = mode==='light' ? 'Switch to dark mode' : 'Switch to light mode'; }
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if(metaTheme) metaTheme.setAttribute('content', mode==='light' ? '#F3F5FA' : '#0A1220');
+  try{ localStorage.setItem('auj_theme', mode); }catch(e){}
+}
+(function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem('auj_theme'); }catch(e){}
+  applyTheme(saved==='light' ? 'light' : 'dark');
+})();
+document.getElementById('themeToggleBtn').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark';
+  applyTheme(cur==='light' ? 'dark' : 'light');
+  if(typeof renderAll==='function' && appView!=='hub') renderAll();
+});
+
 const LS_KEY = 'raseed_data_v3';
 const GS_CLIENT_ID_DEFAULT = '425159118126-bh14caemjeug1i435rs9lpn96sidq0ot.apps.googleusercontent.com';
 const GS_SPREADSHEET_ID_DEFAULT = '1xHI4Cu_AyJ9ugPyqSGhQaAMfhbs6ikOB643K8HcL3d4';
@@ -1578,6 +1687,11 @@ if(!masariPlan.memoDays) masariPlan.memoDays = [6,0,1,2,3,4];
 if(!masariPlan.reviewDays) masariPlan.reviewDays = [masariPlan.reviewWeekday!==undefined ? Number(masariPlan.reviewWeekday) : 5];
 let masariProgress = saved ? (saved.masariProgress||{}) : {}; // { 'YYYY-MM-DD' (scheduled date) : 'YYYY-MM-DD' (actual done date) }
 if(!saved) saveLocal();
+
+/* which accounts show as their own pill on the Raseed hub card — a per-device display
+   preference, not synced data, so it lives in localStorage rather than persist() */
+let hubPillAccountIds = new Set((()=>{ try{ return JSON.parse(localStorage.getItem('auj_hub_pill_accounts')||'[]'); }catch(e){ return []; } })());
+function saveHubPillAccountIds(){ try{ localStorage.setItem('auj_hub_pill_accounts', JSON.stringify([...hubPillAccountIds])); }catch(e){} }
 
 function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 function todayKey(){ return fmtDate(new Date()); }
@@ -1691,6 +1805,17 @@ function accountRunningBalance(acc){
   return bal;
 }
 function totalBalanceMainCurrency(){ return accounts.filter(a=>a.included && a.currency===MAIN_CURRENCY).reduce((s,a)=>s+accountRunningBalance(a),0); }
+/* an account's "active" flag is purely about where it's shown (menus, filters, pickers) —
+   it never touches balances or historical transactions, which stay exactly as they were. */
+function isActiveAccount(a){ return a && a.active!==false; }
+function activeAccounts(){ return accounts.filter(isActiveAccount); }
+function fmtDateDisplay(dateKey){
+  if(!dateKey) return '';
+  const parts = dateKey.split('-');
+  if(parts.length!==3) return dateKey;
+  const [y,m,d] = parts;
+  return `${d}/${m}/${y}`;
+}
 
 /* ---------------- range/account/category controls ---------------- */
 document.querySelectorAll('.range-chip[data-range]').forEach(chip=>{
@@ -1721,17 +1846,18 @@ setupMultiSelect('catFilterBtn','catFilterPanel');
 
 function renderAcctFilterSelect(){
   const panel = document.getElementById('acctFilterPanel');
-  if(!accounts.length){ panel.innerHTML='<div class="ms-empty">No accounts yet</div>'; }
+  const list = activeAccounts();
+  if(!list.length){ panel.innerHTML='<div class="ms-empty">No active accounts</div>'; }
   else{
     panel.innerHTML = `<div class="ms-actions"><span data-msact="all">Select all</span><span data-msact="clear">Clear</span></div>` +
-      accounts.map(a=>`<label class="ms-opt"><input type="checkbox" value="${a.id}" ${selectedAccountIds.has(a.id)?'checked':''}>${a.icon} ${a.name} <span style="color:var(--text-dim2);">(${a.currency})</span></label>`).join('');
+      list.map(a=>`<label class="ms-opt"><input type="checkbox" value="${a.id}" ${selectedAccountIds.has(a.id)?'checked':''}>${a.icon} ${a.name} <span style="color:var(--text-dim2);">(${a.currency})</span></label>`).join('');
     panel.querySelectorAll('input[type=checkbox]').forEach(cb=>{
       cb.addEventListener('change', ()=>{
         if(cb.checked) selectedAccountIds.add(cb.value); else selectedAccountIds.delete(cb.value);
         renderAcctFilterBtnLabel(); renderAll();
       });
     });
-    panel.querySelector('[data-msact="all"]').addEventListener('click', ()=>{ selectedAccountIds=new Set(accounts.map(a=>a.id)); renderAcctFilterSelect(); renderAll(); });
+    panel.querySelector('[data-msact="all"]').addEventListener('click', ()=>{ selectedAccountIds=new Set(list.map(a=>a.id)); renderAcctFilterSelect(); renderAll(); });
     panel.querySelector('[data-msact="clear"]').addEventListener('click', ()=>{ selectedAccountIds=new Set(); renderAcctFilterSelect(); renderAll(); });
   }
   renderAcctFilterBtnLabel();
@@ -1796,10 +1922,15 @@ function hubPill(label, value, warn){
 }
 function renderHubStats(){
   try{
-    // Raseed — current total balance
+    // Raseed — total balance, plus any accounts the user chose to pin as their own pill
     const balEl = document.getElementById('hubFinanceStats');
     const bal = totalBalanceMainCurrency();
-    balEl.innerHTML = hubPill('Balance', fmtMoney(bal, MAIN_CURRENCY), bal<0);
+    let html = hubPill('Balance', fmtMoney(bal, MAIN_CURRENCY), bal<0);
+    activeAccounts().filter(a=>hubPillAccountIds.has(a.id)).forEach(a=>{
+      const b = accountRunningBalance(a);
+      html += hubPill(a.name, fmtMoney(b, a.currency), b<0);
+    });
+    balEl.innerHTML = html;
   }catch(err){ /* app not initialized yet */ }
 
   try{
@@ -1872,6 +2003,30 @@ function renderHubStats(){
     }
   }catch(err){}
 }
+
+/* ---- hub: choose-accounts-as-pills modal ---- */
+document.getElementById('hubFinancePillsBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const list = activeAccounts();
+  const el = document.getElementById('hubPillsList');
+  el.innerHTML = list.length ? list.map(a=>`<label class="ms-opt"><input type="checkbox" value="${a.id}" ${hubPillAccountIds.has(a.id)?'checked':''}>${a.icon} ${a.name} <span style="color:var(--text-dim2);">(${a.currency})</span></label>`).join('')
+    : '<div class="ms-empty">No active accounts yet</div>';
+  openModal('hubPillsModal');
+});
+document.getElementById('hubPillsModal').querySelector('[data-hpact="all"]').addEventListener('click', ()=>{
+  document.querySelectorAll('#hubPillsList input[type=checkbox]').forEach(cb=>cb.checked=true);
+});
+document.getElementById('hubPillsModal').querySelector('[data-hpact="clear"]').addEventListener('click', ()=>{
+  document.querySelectorAll('#hubPillsList input[type=checkbox]').forEach(cb=>cb.checked=false);
+});
+document.getElementById('hubPillsSaveBtn').addEventListener('click', ()=>{
+  hubPillAccountIds = new Set([...document.querySelectorAll('#hubPillsList input[type=checkbox]:checked')].map(cb=>cb.value));
+  saveHubPillAccountIds();
+  closeModal('hubPillsModal');
+  renderHubStats();
+  showToast('Saved');
+});
+
 function enterFinance(){
   appView='finance';
   document.getElementById('hubScreen').style.display='none';
@@ -2451,8 +2606,6 @@ function renderOverview(){
   document.getElementById('ovIncome').textContent = fmtMoney(income,cur);
   document.getElementById('ovExpense').textContent = fmtMoney(expense,cur);
 
-  renderTrendChart();
-
   const catSums={};
   list.filter(t=>t.type==='expense' && (selectedAccountIds.size || t.currency===MAIN_CURRENCY)).forEach(t=>{ catSums[t.categoryId]=(catSums[t.categoryId]||0)+t.amount; });
   const rows = Object.entries(catSums).map(([cid,val])=>({cat:getCategory(cid), val})).filter(e=>e.cat).sort((a,b)=>b.val-a.val);
@@ -2468,7 +2621,8 @@ function renderOverview(){
       const x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1), x2=cx+r*Math.cos(a2), y2=cy+r*Math.sin(a2);
       const xi1=cx+rInner*Math.cos(a1), yi1=cy+rInner*Math.sin(a1), xi2=cx+rInner*Math.cos(a2), yi2=cy+rInner*Math.sin(a2);
       const large=sweep>180?1:0; const color=PALETTE[i%PALETTE.length];
-      paths+=`<path d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${rInner} ${rInner} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${color}" stroke="#0A0A0B" stroke-width="1.5"/>`;
+      const gapStroke = getComputedStyle(document.body).getPropertyValue('--surface').trim() || '#0A0A0B';
+      paths+=`<path d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${rInner} ${rInner} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${color}" stroke="${gapStroke}" stroke-width="1.5"/>`;
       angle+=sweep;
     });
     svg.innerHTML=paths;
@@ -2482,17 +2636,20 @@ function renderOverview(){
   }
 
   const abEl = document.getElementById('acctBars');
-  const shownAccounts = [...accounts].sort((a,b)=>Math.abs(accountRunningBalance(b))-Math.abs(accountRunningBalance(a)));
+  const shownAccounts = activeAccounts().filter(a=>!isCreditAccount(a)).sort((a,b)=>Math.abs(accountRunningBalance(b))-Math.abs(accountRunningBalance(a)));
   const maxBal = Math.max(1, ...shownAccounts.map(a=>Math.abs(accountRunningBalance(a))));
-  abEl.innerHTML = shownAccounts.length ? '' : '<div class="empty-hint">No accounts yet</div>';
+  abEl.innerHTML = shownAccounts.length ? '' : '<div class="empty-hint">No cash accounts yet</div>';
   shownAccounts.forEach(a=>{
     const b = accountRunningBalance(a);
     const pct = Math.max(2, Math.round((Math.abs(b)/maxBal)*100));
-    const row=document.createElement('div'); row.className='acct-bar-row';
+    const row=document.createElement('div'); row.className='acct-bar-row'; row.style.cursor='pointer';
     row.innerHTML = `<div class="acct-bar-top"><div class="an">${a.icon} ${a.name}</div><div class="av">${moneyHtml(b,a.currency)}</div></div>
       <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%; ${b<0?'background:linear-gradient(90deg, var(--expense-soft), var(--expense));':''}"></div></div>`;
+    row.addEventListener('click', ()=>openEditAccount(a.id));
     abEl.appendChild(row);
   });
+
+  renderCreditCardsPanel();
 
   const recentTx = list.map(t=>({...t, _kind:'tx'}));
   const recentTr = filteredTransfers().map(t=>({...t, _kind:'transfer'}));
@@ -2503,13 +2660,13 @@ function renderOverview(){
     const row=document.createElement('div'); row.className='list-row'; row.style.cursor='default';
     if(t._kind==='transfer'){
       const from=getAccount(t.accountId), to=getAccount(t.toAccountId);
-      row.innerHTML=`<div class="list-icon">⇄</div><div class="ltxt"><div class="ln1">${from?from.name:'—'} → ${to?to.name:'—'}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt transfer">${fmtNum(t.amount)} ${t.currency}</div>
+      row.innerHTML=`<div class="list-icon">⇄</div><div class="ltxt"><div class="ln1">${from?from.name:'—'} → ${to?to.name:'—'}</div><div class="ln2">${fmtDateDisplay(t.date)}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt transfer">${fmtNum(t.amount)} ${t.currency}</div>
         <div class="tx-actions"><span data-ovedit="${t.id}" data-ovkind="transfer" title="Edit">✎</span><span data-ovdup="${t.id}" data-ovkind="transfer" title="Duplicate">⧉</span><span data-ovdel="${t.id}" data-ovkind="transfer" title="Delete">✕</span></div>`;
     } else {
       const lbl=txLabel(t);
       const sign = t.type==='income'?'+':'-';
       const cls = t.type==='income'?'income':'expense';
-      row.innerHTML=`<div class="list-icon">${lbl.icon}</div><div class="ltxt"><div class="ln1">${lbl.name}</div><div class="ln2">${t.date}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency)}</div>
+      row.innerHTML=`<div class="list-icon">${lbl.icon}</div><div class="ltxt"><div class="ln1">${lbl.name}</div><div class="ln2">${fmtDateDisplay(t.date)}${t.note?' · '+t.note:''}</div></div><div class="lval tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency)}</div>
         <div class="tx-actions"><span data-ovedit="${t.id}" data-ovkind="tx" title="Edit">✎</span><span data-ovdup="${t.id}" data-ovkind="tx" title="Duplicate">⧉</span><span data-ovdel="${t.id}" data-ovkind="tx" title="Delete">✕</span></div>`;
     }
     rel.appendChild(row);
@@ -2525,77 +2682,40 @@ function renderOverview(){
     persist(); renderAll(); }); });
 }
 
-function renderTrendChart(){
-  const svg = document.getElementById('trendSvg');
-  const includedAedIds = new Set(accounts.filter(a=>a.included && a.currency==='AED').map(a=>a.id));
-  document.getElementById('trendRangeLabel').textContent = rangeMode==='all' ? '(all-time, monthly)' : `(${rangeMode})`;
-  if(!includedAedIds.size){ svg.innerHTML = '<text x="320" y="85" fill="#6C6C72" font-size="12" text-anchor="middle">No AED account marked "included in total" yet</text>'; return; }
+/* ---------------- overview: credit cards (owed + available, combined & itemized) ---------------- */
+function renderCreditCardsPanel(){
+  const wrap = document.getElementById('ccPanelWrap');
+  const emptyWrap = document.getElementById('ccEmptyWrap');
+  const note = document.getElementById('ovCreditNote');
+  const cards = activeAccounts().filter(isCreditAccount);
+  if(!cards.length){ wrap.style.display='none'; emptyWrap.style.display='block'; note.style.display='none'; return; }
+  wrap.style.display='block'; emptyWrap.style.display='none';
+  document.getElementById('ccCountBadge').textContent = `(${cards.length} card${cards.length>1?'s':''})`;
 
-  const events = [];
-  tx.forEach(t=>{ if(t.currency==='AED' && includedAedIds.has(t.accountId)) events.push({date:t.date, delta: t.type==='income'? t.amount : -t.amount}); });
-  transfers.forEach(t=>{
-    if(includedAedIds.has(t.accountId) && t.currency==='AED') events.push({date:t.date, delta:-t.amount});
-    if(includedAedIds.has(t.toAccountId) && (t.toCurrency||t.currency)==='AED') events.push({date:t.date, delta:(t.toAmount!==undefined?t.toAmount:t.amount)});
+  const aedCards = cards.filter(a=>a.currency===MAIN_CURRENCY);
+  const totalOwed = aedCards.reduce((s,a)=>s+creditOwed(a),0);
+  const limitedCards = aedCards.filter(a=>a.creditLimit!=null && a.creditLimit>0);
+  const totalAvail = limitedCards.reduce((s,a)=>s+creditAvailable(a),0);
+  document.getElementById('ccTotalOwed').textContent = fmtMoney(totalOwed, MAIN_CURRENCY);
+  document.getElementById('ccTotalAvail').textContent = limitedCards.length ? fmtMoney(totalAvail, MAIN_CURRENCY) : '—';
+
+  note.style.display = 'flex';
+  note.innerHTML = `💳 ${cards.length} card${cards.length>1?'s':''} on file <span style="color:var(--expense-soft); font-weight:600;">· ${fmtMoney(totalOwed, MAIN_CURRENCY)} owed</span>`;
+
+  const el = document.getElementById('ccList'); el.innerHTML='';
+  [...cards].sort((a,b)=>creditOwed(b)-creditOwed(a)).forEach(a=>{
+    const owed = creditOwed(a);
+    const limit = a.creditLimit;
+    const util = (limit!=null && limit>0) ? Math.min(100, Math.round(owed/limit*100)) : null;
+    const meterColor = util===null ? 'var(--text-dim2)' : util>=85 ? 'var(--expense-soft)' : util>=60 ? '#E6A028' : 'var(--income-soft)';
+    const row=document.createElement('div'); row.className='acct-bar-row'; row.style.cursor='pointer';
+    row.innerHTML = `<div class="acct-bar-top"><div class="an">${a.icon} ${a.name}</div>
+        <div class="av">Owed ${fmtMoney(owed,a.currency)}${limit?` <span style="color:var(--text-dim2); font-weight:500;">/ ${fmtMoney(limit,a.currency)}</span>`:''}</div></div>
+      <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${util!==null?Math.max(2,util):100}%; background:${meterColor};"></div></div>
+      <div style="font-size:11px; color:var(--text-dim2); margin-top:3px;">${limit ? `${fmtMoney(creditAvailable(a),a.currency)} available · ${util}% used` : 'no credit limit set'}</div>`;
+    row.addEventListener('click', ()=>openEditAccount(a.id));
+    el.appendChild(row);
   });
-  events.sort((a,b)=>a.date.localeCompare(b.date));
-  let baseline = 0; accounts.forEach(a=>{ if(includedAedIds.has(a.id)) baseline += a.balance; });
-
-  const r = computeRange();
-  const rangeStart = r.start==='0000-01-01' ? (events.length?events[0].date:todayKey()) : r.start;
-  const rangeEnd = r.end==='9999-12-31' ? todayKey() : r.end;
-  const startD = new Date(rangeStart+'T00:00:00'), endD = new Date(rangeEnd+'T00:00:00');
-  const spanDays = Math.max(1, Math.round((endD-startD)/86400000)+1);
-
-  let running = baseline; let ei=0;
-  while(ei<events.length && events[ei].date < rangeStart){ running += events[ei].delta; ei++; }
-
-  const points = [];
-  if(spanDays<=45){
-    let cursor = new Date(startD);
-    while(cursor<=endD){
-      const key=fmtDate(cursor);
-      while(ei<events.length && events[ei].date<=key){ running+=events[ei].delta; ei++; }
-      points.push([key, running]);
-      cursor.setDate(cursor.getDate()+1);
-    }
-  } else if(spanDays<=420){
-    let cursor = new Date(startD);
-    while(cursor<=endD){
-      const weekEnd = new Date(cursor); weekEnd.setDate(cursor.getDate()+6);
-      const key = fmtDate(weekEnd<endD?weekEnd:endD);
-      while(ei<events.length && events[ei].date<=key){ running+=events[ei].delta; ei++; }
-      points.push([key, running]);
-      cursor.setDate(cursor.getDate()+7);
-    }
-  } else {
-    let cursor = new Date(startD.getFullYear(), startD.getMonth(), 1);
-    while(cursor<=endD){
-      const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
-      const key = fmtDate(monthEnd<endD?monthEnd:endD);
-      while(ei<events.length && events[ei].date<=key){ running+=events[ei].delta; ei++; }
-      points.push([fmtDate(cursor), running]);
-      cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
-    }
-  }
-  if(points.length<2){ svg.innerHTML = '<text x="320" y="85" fill="#6C6C72" font-size="12" text-anchor="middle">Not enough history in this period</text>'; return; }
-
-  const vals = points.map(p=>p[1]);
-  const minV = Math.min(...vals, 0), maxV = Math.max(...vals, 1);
-  const W=640, H=170, pad=8;
-  const stepX = (W-2*pad)/(points.length-1);
-  const scaleY = v => H-pad - ((v-minV)/(maxV-minV||1))*(H-2*pad);
-  let path=''; points.forEach((p,i)=>{ const x=pad+i*stepX, y=scaleY(p[1]); path += (i===0?'M':'L')+x+' '+y+' '; });
-  const area = `M ${pad} ${H-pad} L ` + points.map((p,i)=>`${pad+i*stepX} ${scaleY(p[1])}`).join(' L ') + ` L ${pad+(points.length-1)*stepX} ${H-pad} Z`;
-  const fmtLbl = k => { const dt=new Date(k+'T00:00:00'); return spanDays>420 ? `${MONTHS[dt.getMonth()].slice(0,3)} ${dt.getFullYear()}` : `${MONTHS[dt.getMonth()].slice(0,3)} ${dt.getDate()}`; };
-  svg.innerHTML = `
-    <defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2F7DE0" stop-opacity="0.35"/><stop offset="100%" stop-color="#2F7DE0" stop-opacity="0"/>
-    </linearGradient></defs>
-    <path d="${area}" fill="url(#trendGrad)"/>
-    <path d="${path}" fill="none" stroke="#8FC3FF" stroke-width="2"/>
-    <text x="${pad}" y="${H-2}" fill="#6C6C72" font-size="10">${fmtLbl(points[0][0])}</text>
-    <text x="${W-pad}" y="${H-2}" fill="#6C6C72" font-size="10" text-anchor="end">${fmtLbl(points[points.length-1][0])}</text>
-  `;
 }
 
 /* ---------------- render: transactions list ---------------- */
@@ -2658,7 +2778,7 @@ function renderGroupedTx(list, groupBy){
 
     const body=document.createElement('div'); body.className='group-body'+(isCollapsed?' collapsed':'');
     items.forEach(t=>{
-      const lbl = groupBy==='date' ? txLabel(t) : {icon:'📅', name:t.date};
+      const lbl = groupBy==='date' ? txLabel(t) : {icon:'📅', name:fmtDateDisplay(t.date)};
       const acc=getAccount(t.accountId);
       const row=document.createElement('div'); row.className='tx-row';
       const cls=t.type==='income'?'income':'expense';
@@ -2724,9 +2844,16 @@ document.getElementById('acTypeTabs').addEventListener('click',(e)=>{
 function renderAccountsTab(){
   const el=document.getElementById('accountsList'); el.innerHTML='';
   if(!accounts.length){ el.innerHTML='<div class="empty-hint">No accounts yet — add your first account</div>'; return; }
-  accounts.forEach(a=>{
-    const row=document.createElement('div'); row.className='list-row';
-    row.innerHTML=`<div class="list-icon">${a.icon}</div><div class="ltxt"><div class="ln1">${a.name}</div><div class="ln2">${a.currency}${a.included?' · included in total':''}</div></div><div class="lval">${moneyHtml(accountRunningBalance(a),a.currency)}</div>`;
+  const ordered = [...accounts].sort((a,b)=>(isActiveAccount(b)?1:0)-(isActiveAccount(a)?1:0));
+  ordered.forEach(a=>{
+    const active = isActiveAccount(a);
+    const row=document.createElement('div'); row.className='list-row'+(active?'':' inactive-acct');
+    if(isCreditAccount(a)){
+      const owed = creditOwed(a); const avail = creditAvailable(a);
+      row.innerHTML=`<div class="list-icon">${a.icon}</div><div class="ltxt"><div class="ln1">${a.name}${active?'':'<span class="inactive-tag">Inactive</span>'}</div><div class="ln2">Credit card${a.included?' · included in total':''}${avail!==null?' · '+fmtMoney(avail,a.currency)+' available':''}</div></div><div class="lval" style="color:var(--expense-soft);">Owed ${fmtMoney(owed,a.currency)}</div>`;
+    } else {
+      row.innerHTML=`<div class="list-icon">${a.icon}</div><div class="ltxt"><div class="ln1">${a.name}${active?'':'<span class="inactive-tag">Inactive</span>'}</div><div class="ln2">${a.currency}${a.included?' · included in total':''}</div></div><div class="lval">${moneyHtml(accountRunningBalance(a),a.currency)}</div>`;
+    }
     row.addEventListener('click', ()=>openEditAccount(a.id));
     el.appendChild(row);
   });
@@ -2753,6 +2880,28 @@ function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(ov=>{ ov.addEventListener('click',(e)=>{ if(e.target===ov) ov.classList.remove('open'); }); });
 
+/* keep Tab navigation trapped inside whichever modal is open, instead of leaking
+   into the (visually covered but still-focusable) screen behind it */
+function getFocusable(container){
+  return [...container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter(el=>el.offsetParent!==null);
+}
+document.addEventListener('keydown', (e)=>{
+  if(e.key!=='Tab') return;
+  const openModalEl = document.querySelector('.modal-overlay.open');
+  if(!openModalEl) return;
+  const modalBox = openModalEl.querySelector('.modal') || openModalEl;
+  const focusables = getFocusable(modalBox);
+  if(!focusables.length) return;
+  const first=focusables[0], last=focusables[focusables.length-1];
+  const inside = modalBox.contains(document.activeElement);
+  if(e.shiftKey){
+    if(!inside || document.activeElement===first){ e.preventDefault(); last.focus(); }
+  } else {
+    if(!inside || document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+});
+
 /* fills a <datalist> with unique, non-empty previous values so the browser suggests them as you type */
 function populateTextSuggestions(datalistId, values){
   const el = document.getElementById(datalistId);
@@ -2770,21 +2919,46 @@ function buildIconGrid(gridEl, icons, current, onPick){
 }
 
 /* ---------------- edit account ---------------- */
+/* credit-card accounts: debt grows the normal way (an expense tx lowers accountRunningBalance,
+   a payment is just a transfer in) — the only special handling is the "owed" framing in the UI
+   and keeping it out of the real cash total by default. */
+function isCreditAccount(a){ return a && a.type==='credit'; }
+function creditOwed(acc){ return Math.max(0, -accountRunningBalance(acc)); }
+function creditAvailable(acc){ return (acc.creditLimit!=null && acc.creditLimit>0) ? Math.max(0, acc.creditLimit-creditOwed(acc)) : null; }
+function updateEaTypeUI(type){
+  const isCredit = type==='credit';
+  document.getElementById('eaCreditLimitField').style.display = isCredit ? 'block' : 'none';
+  document.getElementById('eaBalanceLabel').textContent = isCredit ? 'Current amount owed (debt)' : 'Starting balance';
+  document.querySelectorAll('#eaTypeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.t===type));
+}
+document.getElementById('eaTypeTabs').addEventListener('click', (e)=>{
+  const b=e.target.closest('button'); if(!b) return;
+  updateEaTypeUI(b.dataset.t);
+  if(b.dataset.t==='credit') document.getElementById('eaIncludedSwitch').classList.remove('on');
+});
 function openEditAccount(id){
-  const a=id?getAccount(id):{name:'',currency:'AED',balance:0,date:todayKey(),included:true,icon:'🏦'};
+  const a=id?getAccount(id):{name:'',currency:'AED',balance:0,date:todayKey(),included:true,active:true,type:'normal',icon:'🏦'};
+  const type = a.type==='credit' ? 'credit' : 'normal';
   document.getElementById('eaTitle').textContent=id?'Edit account':'New account';
   document.getElementById('eaName').value=a.name;
   document.getElementById('eaCurrency').value=a.currency;
-  document.getElementById('eaBalance').value=a.balance;
+  document.getElementById('eaBalance').value = type==='credit' ? Math.max(0,-(a.balance||0)) : a.balance;
+  document.getElementById('eaCreditLimit').value = a.creditLimit!=null ? a.creditLimit : '';
   document.getElementById('eaDate').value=a.date;
+  updateEaTypeUI(type);
   const sw=document.getElementById('eaIncludedSwitch'); sw.classList.toggle('on', !!a.included);
+  const actSw=document.getElementById('eaActiveSwitch'); actSw.classList.toggle('on', isActiveAccount(a));
   let pickedIcon=a.icon;
   buildIconGrid(document.getElementById('eaIconGrid'), ACCOUNT_ICONS, a.icon, ic=>pickedIcon=ic);
   document.getElementById('eaDeleteBtn').style.display=id?'inline-flex':'none';
   document.getElementById('eaSaveBtn').onclick=()=>{
     const name=document.getElementById('eaName').value.trim(); if(!name){ showToast('Enter an account name'); return; }
-    const payload={ name, currency:document.getElementById('eaCurrency').value, balance:parseFloat(document.getElementById('eaBalance').value)||0,
-      date:document.getElementById('eaDate').value||todayKey(), included:sw.classList.contains('on'), icon:pickedIcon };
+    const chosenType = document.querySelector('#eaTypeTabs button.active').dataset.t;
+    const enteredBalance = parseFloat(document.getElementById('eaBalance').value)||0;
+    const payload={ name, currency:document.getElementById('eaCurrency').value, type:chosenType,
+      balance: chosenType==='credit' ? -Math.abs(enteredBalance) : enteredBalance,
+      creditLimit: chosenType==='credit' ? (parseFloat(document.getElementById('eaCreditLimit').value)||null) : null,
+      date:document.getElementById('eaDate').value||todayKey(), included:sw.classList.contains('on'), active:actSw.classList.contains('on'), icon:pickedIcon };
     if(id){ Object.assign(getAccount(id), payload); } else { accounts.push({id:'a'+Date.now(), ...payload}); }
     persist(); closeModal('editAccountModal'); renderAcctFilterSelect(); renderAll(); showToast('Saved');
   };
@@ -2798,6 +2972,7 @@ function openEditAccount(id){
   openModal('editAccountModal');
 }
 document.getElementById('eaIncludedSwitch').addEventListener('click', function(){ this.classList.toggle('on'); });
+document.getElementById('eaActiveSwitch').addEventListener('click', function(){ this.classList.toggle('on'); });
 
 /* ---------------- edit category ---------------- */
 function openEditCategory(id){
@@ -2821,7 +2996,11 @@ function openEditCategory(id){
 
 /* ---------------- entry: income/expense (create + edit) ---------------- */
 let entryMode='expense', entryAmountStr='0', editingTxId=null;
-function populateAccountSelect(selectEl){ selectEl.innerHTML=accounts.map(a=>`<option value="${a.id}">${a.name} (${a.currency})</option>`).join(''); }
+function populateAccountSelect(selectEl, keepId){
+  let list = activeAccounts();
+  if(keepId && !list.some(a=>a.id===keepId)){ const extra=getAccount(keepId); if(extra) list = [...list, extra]; }
+  selectEl.innerHTML = list.map(a=>`<option value="${a.id}">${a.name} (${a.currency})${isActiveAccount(a)?'':' — inactive'}</option>`).join('');
+}
 function populateEntryCategorySelect(){
   const list=categories.filter(c=>c.type===entryMode);
   const sel=document.getElementById('entryCategorySelect');
@@ -2832,13 +3011,14 @@ function openEntry(mode, existingTx, isDuplicate){
   if(!accounts.length){ showToast('Add an account first from the Accounts tab'); goToTab('accounts'); return; }
   entryMode=mode; editingTxId = (existingTx && !isDuplicate) ? existingTx.id : null;
   entryAmountStr = existingTx ? String(existingTx.amount) : '0';
+  resetCalc('entry');
   document.getElementById('entryTitle').textContent = isDuplicate ? (mode==='expense'?'Duplicate expense':'Duplicate income') : existingTx ? (mode==='expense'?'Edit expense':'Edit income') : (mode==='expense'?'New expense':'New income');
   document.getElementById('entryAmtBox').className='calc-amt-box '+mode;
-  document.getElementById('entryAmt').textContent=entryAmountStr;
+  updateAmtDisplay('entry');
   document.getElementById('entryNote').value = existingTx ? (existingTx.note||'') : '';
   populateTextSuggestions('txNoteSuggestions', tx.map(t=>t.note));
   document.getElementById('entryDate').value = existingTx ? existingTx.date : todayKey();
-  populateAccountSelect(document.getElementById('entryAccountSelect'));
+  populateAccountSelect(document.getElementById('entryAccountSelect'), existingTx?existingTx.accountId:null);
   if(existingTx) document.getElementById('entryAccountSelect').value = existingTx.accountId;
   else if(selectedAccountIds.size===1) document.getElementById('entryAccountSelect').value=[...selectedAccountIds][0];
   updateEntryCurrency();
@@ -2852,19 +3032,70 @@ document.getElementById('entryAccountSelect').addEventListener('change', updateE
 document.getElementById('fabExpense').addEventListener('click', ()=>openEntry('expense', null));
 document.getElementById('fabIncome').addEventListener('click', ()=>openEntry('income', null));
 document.getElementById('entryKeypad').addEventListener('click',(e)=>{
-  const b=e.target.closest('button'); if(!b) return; handleKey('entry', b.dataset.k);
+  const b=e.target.closest('button'); if(!b) return; handleKey('entry', b.dataset.k, b.dataset.op);
 });
-function handleKey(scope, k){
+/* ---- tiny calculator built into the amount keypads ---- */
+let calcAcc = {entry:null, transfer:null}, calcOp = {entry:null, transfer:null};
+function calcApply(acc, op, cur){
+  acc=parseFloat(acc)||0; cur=parseFloat(cur)||0;
+  if(op==='+') return acc+cur;
+  if(op==='−') return acc-cur;
+  if(op==='×') return acc*cur;
+  if(op==='÷') return cur!==0 ? acc/cur : acc;
+  return cur;
+}
+function round2(n){ return Math.round((n+Number.EPSILON)*100)/100; }
+function resetCalc(scope){ calcAcc[scope]=null; calcOp[scope]=null; }
+function calcDisplay(scope){
+  const amt = scope==='entry'?entryAmountStr:transferAmountStr;
+  const acc = calcAcc[scope], op = calcOp[scope];
+  if(op!==null && acc!==null) return `${round2(acc)} ${op} ${amt}`;
+  return amt;
+}
+function updateAmtDisplay(scope){
+  document.getElementById(scope==='entry'?'entryAmt':'transferAmt').textContent = calcDisplay(scope);
+  document.querySelectorAll('#'+(scope==='entry'?'entryKeypad':'transferKeypad')+' button.op').forEach(b=>{
+    b.classList.toggle('active', calcOp[scope]!==null && b.dataset.op===calcOp[scope] && b.dataset.op!=='=' && b.dataset.op!=='%');
+  });
+}
+function resolveCalc(scope){
+  if(calcOp[scope]!==null && calcAcc[scope]!==null){
+    const cur = parseFloat(scope==='entry'?entryAmountStr:transferAmountStr)||0;
+    const result = round2(calcApply(calcAcc[scope], calcOp[scope], cur));
+    if(scope==='entry') entryAmountStr=String(result); else transferAmountStr=String(result);
+  }
+  resetCalc(scope);
+}
+function handleKey(scope, k, opSym){
   let cur = scope==='entry'?entryAmountStr:transferAmountStr;
-  if(k==='clear') cur='0';
+  if(k==='clear'){ cur='0'; resetCalc(scope); }
   else if(k==='back') cur = cur.length>1?cur.slice(0,-1):'0';
   else if(k==='.'){ if(!cur.includes('.')) cur+='.'; }
+  else if(k==='op'){
+    const curNum = parseFloat(cur)||0;
+    if(opSym==='%'){
+      const base = calcAcc[scope]!==null ? calcAcc[scope] : curNum;
+      let pctVal = round2(base*curNum/100);
+      if(calcOp[scope]!==null && calcAcc[scope]!==null){
+        calcAcc[scope] = round2(calcApply(calcAcc[scope], calcOp[scope], pctVal));
+        calcOp[scope]=null; cur = String(calcAcc[scope]); calcAcc[scope]=null;
+      } else { cur = String(pctVal); }
+    } else if(opSym==='='){
+      resolveCalc(scope); cur = scope==='entry'?entryAmountStr:transferAmountStr;
+    } else {
+      if(calcOp[scope]!==null && calcAcc[scope]!==null){ calcAcc[scope] = round2(calcApply(calcAcc[scope], calcOp[scope], curNum)); }
+      else { calcAcc[scope] = curNum; }
+      calcOp[scope] = opSym; cur = '0';
+    }
+  }
   else { cur = cur==='0'?k:cur+k; }
-  if(scope==='entry'){ entryAmountStr=cur; document.getElementById('entryAmt').textContent=cur; }
-  else { transferAmountStr=cur; document.getElementById('transferAmt').textContent=cur; updateTransferPreview(); }
+  if(scope==='entry'){ entryAmountStr=cur; } else { transferAmountStr=cur; }
+  updateAmtDisplay(scope);
+  if(scope==='transfer') updateTransferPreview();
 }
 document.getElementById('entrySaveBtn').addEventListener('click', saveEntry);
 function saveEntry(){
+  resolveCalc('entry');
   const amount=parseFloat(entryAmountStr)||0;
   if(amount<=0){ showToast('Enter an amount greater than zero'); return; }
   const categoryId = document.getElementById('entryCategorySelect').value;
@@ -2883,12 +3114,13 @@ function openTransferEntry(existing, isDuplicate){
   if(accounts.length<2){ showToast('You need at least two accounts to make a transfer'); goToTab('accounts'); return; }
   editingTransferId = (existing && !isDuplicate) ? existing.id : null;
   transferAmountStr = existing ? String(existing.amount) : '0';
+  resetCalc('transfer');
   document.getElementById('transferTitle').textContent = isDuplicate ? 'Duplicate transfer' : (existing ? 'Edit transfer' : 'Transfer between accounts');
-  document.getElementById('transferAmt').textContent = transferAmountStr;
+  updateAmtDisplay('transfer');
   document.getElementById('transferNote').value = existing ? (existing.note||'') : '';
   populateTextSuggestions('transferNoteSuggestions', transfers.map(t=>t.note));
   document.getElementById('transferDate').value = existing ? existing.date : todayKey();
-  populateAccountSelect(document.getElementById('transferFrom')); populateAccountSelect(document.getElementById('transferTo'));
+  populateAccountSelect(document.getElementById('transferFrom'), existing?existing.accountId:null); populateAccountSelect(document.getElementById('transferTo'), existing?existing.toAccountId:null);
   if(existing){ document.getElementById('transferFrom').value=existing.accountId; document.getElementById('transferTo').value=existing.toAccountId; document.getElementById('transferRate').value=existing.rate||1; }
   else { document.getElementById('transferTo').selectedIndex=1; document.getElementById('transferRate').value=1; }
   updateTransferCurrency();
@@ -2929,9 +3161,10 @@ document.getElementById('transferFrom').addEventListener('change', updateTransfe
 document.getElementById('transferTo').addEventListener('change', updateTransferCurrency);
 document.getElementById('transferRate').addEventListener('input', updateTransferPreview);
 document.getElementById('fabTransfer').addEventListener('click', ()=>openTransferEntry(null));
-document.getElementById('transferKeypad').addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; handleKey('transfer', b.dataset.k); });
+document.getElementById('transferKeypad').addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; handleKey('transfer', b.dataset.k, b.dataset.op); });
 document.getElementById('transferSaveBtn').addEventListener('click', saveTransfer);
 function saveTransfer(){
+  resolveCalc('transfer');
   const amount=parseFloat(transferAmountStr)||0;
   if(amount<=0){ showToast('Enter an amount greater than zero'); return; }
   const from=document.getElementById('transferFrom').value, to=document.getElementById('transferTo').value;
@@ -3075,11 +3308,12 @@ function openRecurringEditor(id){
   document.getElementById('recTitle').textContent = id ? 'Edit recurring' : 'New recurring';
   [...document.getElementById('recTypeTabs').children].forEach(b=>b.classList.toggle('active', b.dataset.rt===recType));
   [...document.getElementById('recEndTabs').children].forEach(b=>b.classList.toggle('active', b.dataset.re===recEndMode));
-  populateAccountSelect(document.getElementById('recAccount'));
-  populateAccountSelect(document.getElementById('recToAccount'));
+  populateAccountSelect(document.getElementById('recAccount'), r?r.accountId:null);
+  populateAccountSelect(document.getElementById('recToAccount'), r?r.toAccountId:null);
   populateRecCategorySelect();
-  document.getElementById('recAccount').value = r ? r.accountId : (accounts[0]?accounts[0].id:'');
-  document.getElementById('recToAccount').value = r && r.toAccountId ? r.toAccountId : (accounts[1]?accounts[1].id:(accounts[0]?accounts[0].id:''));
+  const _aa = activeAccounts();
+  document.getElementById('recAccount').value = r ? r.accountId : (_aa[0]?_aa[0].id:'');
+  document.getElementById('recToAccount').value = r && r.toAccountId ? r.toAccountId : (_aa[1]?_aa[1].id:(_aa[0]?_aa[0].id:''));
   if(r && r.categoryId) document.getElementById('recCategory').value = r.categoryId;
   document.getElementById('recRate').value = r ? (r.rate||1) : 1;
   document.getElementById('recAmount').value = r ? r.amount : '';
@@ -3193,6 +3427,12 @@ document.addEventListener('keydown', (e)=>{
   if(/^[0-9]$/.test(e.key)) handleKey(scope, e.key);
   else if(e.key==='.') handleKey(scope, '.');
   else if(e.key==='Backspace') handleKey(scope, 'back');
+  else if(e.key==='+') handleKey(scope, 'op', '+');
+  else if(e.key==='-') handleKey(scope, 'op', '−');
+  else if(e.key==='*') handleKey(scope, 'op', '×');
+  else if(e.key==='/'){ e.preventDefault(); handleKey(scope, 'op', '÷'); }
+  else if(e.key==='%') handleKey(scope, 'op', '%');
+  else if(e.key==='=') handleKey(scope, 'op', '=');
   else if(e.key==='Escape') closeModal(entryOpen?'entryModal':'transferModal');
   else if(e.key==='Enter') entryOpen ? saveEntry() : saveTransfer();
 });
@@ -4282,7 +4522,8 @@ function stateFromWorkbook(wb){
   transfers = wb.Sheets['Transfers'] ? XLSX.utils.sheet_to_json(wb.Sheets['Transfers']) : [];
   fxRates = {};
   if(wb.Sheets['Rates']){ XLSX.utils.sheet_to_json(wb.Sheets['Rates']).forEach(r=>{ if(r.currency) fxRates[r.currency]=parseFloat(r.rate)||0; }); }
-  accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; });
+  accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; a.active = !(a.active===false||a.active==='FALSE'||a.active===0||a.active==='0');
+    a.type = a.type==='credit' ? 'credit' : 'normal'; a.creditLimit = (a.creditLimit!==undefined && a.creditLimit!=='') ? (parseFloat(a.creditLimit)||null) : null; });
   tx.forEach(t=>{ t.amount=parseFloat(t.amount)||0; });
   transfers.forEach(t=>{ t.amount=parseFloat(t.amount)||0; t.toAmount=parseFloat(t.toAmount)||t.amount; t.rate=parseFloat(t.rate)||1; });
   attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, note:r.note||'', sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
@@ -4418,7 +4659,7 @@ document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
 const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans','MasariPlan','MasariProgress'];
 const GS_HEADERS = {
-  Accounts: ['id','name','currency','balance','date','included','icon'],
+  Accounts: ['id','name','currency','balance','date','included','icon','active','type','creditLimit'],
   Categories: ['id','name','icon','type'],
   Transactions: ['id','type','accountId','categoryId','amount','currency','date','note'],
   Transfers: ['id','accountId','toAccountId','amount','currency','toAmount','toCurrency','rate','date','note'],
@@ -4433,7 +4674,7 @@ const GS_HEADERS = {
 };
 function gsRowsFromState(){
   return {
-    Accounts: [GS_HEADERS.Accounts, ...accounts.map(a=>[a.id,a.name,a.currency,a.balance,a.date,a.included?1:0,a.icon])],
+    Accounts: [GS_HEADERS.Accounts, ...accounts.map(a=>[a.id,a.name,a.currency,a.balance,a.date,a.included?1:0,a.icon,isActiveAccount(a)?1:0,a.type||'normal',a.creditLimit!=null?a.creditLimit:''])],
     Categories: [GS_HEADERS.Categories, ...categories.map(c=>[c.id,c.name,c.icon,c.type])],
     Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||''])],
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
@@ -4516,7 +4757,9 @@ async function gsPull(silent){
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
     const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR, mpVR, mgVR] = data.valueRanges;
-    const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE'}));
+    const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE',
+      active: !(a.active==0||a.active===false||a.active==='0'||a.active==='FALSE'), type: a.type==='credit'?'credit':'normal',
+      creditLimit: (a.creditLimit!==undefined && a.creditLimit!=='') ? parseFloat(a.creditLimit)||null : null}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0}));
     const newTransfers = gsObjectsFromRows(trVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, toAmount:parseFloat(t.toAmount)||0, rate:parseFloat(t.rate)||1}));
