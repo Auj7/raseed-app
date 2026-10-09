@@ -1685,6 +1685,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
     </div>
     <div class="field" id="eaBalanceField"><label id="eaBalanceLabel">Starting balance</label><input type="number" id="eaBalance" step="0.01" value="0"></div>
     <div class="field" id="eaCreditLimitField" style="display:none;"><label>Credit limit (optional)</label><input type="number" id="eaCreditLimit" step="0.01" min="0" placeholder="e.g. 80000"></div>
+    <div class="field" id="eaCashbackLimitField" style="display:none;"><label>Monthly cashback limit (optional)</label><input type="number" id="eaCashbackLimit" step="0.01" min="0" placeholder="e.g. 500"></div>
     <div class="field"><label>Starting balance date</label><input type="date" id="eaDate"></div>
     <div class="field" style="display:flex; align-items:center; justify-content:space-between;">
       <label style="margin:0;">Included in total balance</label>
@@ -3157,12 +3158,22 @@ function renderCreditCardsPanel(){
 }
 
 /* ---------------- cashback sources (own running balance) + discounts (pure log) ---------------- */
+function monthCashbackEarned(accountId){
+  const mk = todayKey().slice(0,7);
+  return tx.filter(t=>t.type==='income' && t.accountId===accountId && t.categoryId===CASHBACK_CATEGORY_ID && t.date.slice(0,7)===mk).reduce((s,t)=>s+t.amount,0);
+}
 function renderCashbackRow(a, host, maxBal){
   const bal = accountRunningBalance(a);
   const pct = Math.max(2, Math.round((Math.abs(bal)/maxBal)*100));
   const row=document.createElement('div'); row.className='acct-bar-row'; row.style.cursor='pointer';
+  let limitLine = '';
+  if(a.monthlyCashbackLimit>0){
+    const earned = monthCashbackEarned(a.id);
+    const over = earned>a.monthlyCashbackLimit;
+    limitLine = `<div style="font-size:11px; color:${over?'var(--expense-soft)':'var(--text-dim2)'}; margin-top:3px;">${fmtMoney(earned,MAIN_CURRENCY)} of ${fmtMoney(a.monthlyCashbackLimit,MAIN_CURRENCY)} earned this month${over?' — over limit':''}</div>`;
+  }
   row.innerHTML = `<div class="acct-bar-top"><div class="an">${a.icon} ${a.name}</div><div class="av">${moneyHtml(bal,a.currency)}</div></div>
-    <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%;"></div></div>`;
+    <div class="acct-bar-track"><div class="acct-bar-fill" style="width:${pct}%;"></div></div>${limitLine}`;
   row.addEventListener('click', ()=>openEditAccount(a.id));
   host.appendChild(row);
 }
@@ -3725,6 +3736,7 @@ function updateEaTypeUI(type){
   const isCredit = type==='credit';
   const isCashback = type==='cashback';
   document.getElementById('eaCreditLimitField').style.display = isCredit ? 'block' : 'none';
+  document.getElementById('eaCashbackLimitField').style.display = isCashback ? 'block' : 'none';
   document.getElementById('eaBalanceLabel').textContent = isCredit ? 'Current amount owed (debt)' : isCashback ? 'Current cashback balance' : 'Starting balance';
   document.querySelectorAll('#eaTypeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.t===type));
 }
@@ -3741,6 +3753,7 @@ function openEditAccount(id){
   document.getElementById('eaCurrency').value=a.currency;
   document.getElementById('eaBalance').value = type==='credit' ? Math.max(0,-(a.balance||0)) : a.balance;
   document.getElementById('eaCreditLimit').value = a.creditLimit!=null ? a.creditLimit : '';
+  document.getElementById('eaCashbackLimit').value = a.monthlyCashbackLimit!=null ? a.monthlyCashbackLimit : '';
   document.getElementById('eaDate').value=a.date;
   updateEaTypeUI(type);
   const sw=document.getElementById('eaIncludedSwitch'); sw.classList.toggle('on', !!a.included);
@@ -3755,6 +3768,7 @@ function openEditAccount(id){
     const payload={ name, currency:document.getElementById('eaCurrency').value, type:chosenType,
       balance: chosenType==='credit' ? -Math.abs(enteredBalance) : enteredBalance,
       creditLimit: chosenType==='credit' ? (parseFloat(document.getElementById('eaCreditLimit').value)||null) : null,
+      monthlyCashbackLimit: chosenType==='cashback' ? (parseFloat(document.getElementById('eaCashbackLimit').value)||null) : null,
       date:document.getElementById('eaDate').value||todayKey(), included:sw.classList.contains('on'), active:actSw.classList.contains('on'), icon:pickedIcon };
     if(id){ Object.assign(getAccount(id), payload); } else { accounts.push({id:'a'+Date.now(), ...payload}); }
     persist(); closeModal('editAccountModal'); renderAcctFilterSelect(); renderAll(); showToast('Saved');
@@ -3821,13 +3835,18 @@ function openEntry(mode, existingTx, isDuplicate){
   populateEntryCategorySelect();
   if(existingTx) document.getElementById('entryCategorySelect').value = existingTx.categoryId;
   document.getElementById('entrySaveBtn').textContent = editingTxId ? 'Update' : 'Save';
-  entryDiscDraft = []; entryCbDraft = [];
+  /* when editing, reload whatever discounts/cashback are already linked to this transaction, so editing
+     an expense also reaches the records tied to it — not just lets you add new ones */
+  entryDiscDraft = editingTxId ? discounts.filter(d=>d.txId===editingTxId).map(d=>({id:newRowId(), source:d.source, mode:d.mode||'flat', value:d.value||0})) : [];
+  entryCbDraft = editingTxId ? tx.filter(t=>t.relatedTxId===editingTxId).map(t=>({id:newRowId(), accountId:t.accountId, mode:'flat', value:t.amount})) : [];
   renderEntryDiscRows(); renderEntryCbRows();
-  document.getElementById('entryBenefitSection').style.display = (mode==='expense' && !editingTxId) ? 'block' : 'none';
+  document.getElementById('entryBenefitSection').style.display = (mode==='expense') ? 'block' : 'none';
   populateTextSuggestions('discountSourceSuggestions', discounts.map(d=>d.source));
   entryTagSelection = new Set(existingTx ? (existingTx.tags||[]) : []);
   renderEntryTagChips();
   openModal('entryModal');
+  const amtInput = document.getElementById('entryAmtInput');
+  setTimeout(()=>{ amtInput.focus(); amtInput.select(); }, 50);
 }
 
 /* ---------------- entry: tags ---------------- */
@@ -4012,17 +4031,22 @@ function saveEntry(){
   const accId=document.getElementById('entryAccountSelect').value; const acc=getAccount(accId);
   const payload = { type:entryMode, accountId:accId, categoryId, amount, currency:acc.currency,
     date:document.getElementById('entryDate').value||todayKey(), note:document.getElementById('entryNote').value.trim(), tags:[...entryTagSelection] };
-  let newTxId = null;
-  if(editingTxId){ const existing = tx.find(t=>t.id===editingTxId); Object.assign(existing, payload); }
-  else { newTxId = 't'+Date.now(); tx.push({ id:newTxId, ...payload }); }
+  let newTxId = null; let targetTxId;
+  if(editingTxId){ const existing = tx.find(t=>t.id===editingTxId); Object.assign(existing, payload); targetTxId=editingTxId; }
+  else { newTxId = 't'+Date.now(); tx.push({ id:newTxId, ...payload }); targetTxId=newTxId; }
 
-  /* optional discounts + cashback — only recorded on brand-new expense entries (not edits); any mix, any number of each */
-  if(!editingTxId && entryMode==='expense'){
+  /* optional discounts + cashback on an expense — available on new entries AND when editing one;
+     editing simply replaces whatever was linked before with the current rows in the form */
+  if(entryMode==='expense'){
+    if(editingTxId){
+      discounts = discounts.filter(d=>d.txId!==editingTxId);
+      tx = tx.filter(t=>t.relatedTxId!==editingTxId);
+    }
     entryDiscDraft.forEach(row=>{
       const amt = computeRowAmount(row.mode, row.value);
       if(amt>0){
         const source = (row.source||'').trim() || 'Discount';
-        discounts.push({ id:'d'+newRowId(), date:payload.date, source, mode:row.mode, value:row.value||0, amount:amt, note:payload.note, txId:newTxId });
+        discounts.push({ id:'d'+newRowId(), date:payload.date, source, mode:row.mode, value:row.value||0, amount:amt, note:payload.note, txId:targetTxId });
       }
     });
     entryCbDraft.forEach(row=>{
@@ -4031,7 +4055,7 @@ function saveEntry(){
       if(amt>0 && cbAcc){
         ensureCashbackCategory();
         tx.push({ id:'t'+newRowId(), type:'income', accountId:row.accountId, categoryId:CASHBACK_CATEGORY_ID,
-          amount:amt, currency:cbAcc.currency, date:payload.date, note:(payload.note?payload.note+' · ':'')+'Cashback earned' });
+          amount:amt, currency:cbAcc.currency, date:payload.date, note:(payload.note?payload.note+' · ':'')+'Cashback earned', relatedTxId:targetTxId });
       } else if(amt>0 && !cbAcc){ showToast('One cashback row has no source selected — skipped'); }
     });
   }
@@ -5464,7 +5488,8 @@ function stateFromWorkbook(wb){
   fxRates = {};
   if(wb.Sheets['Rates']){ XLSX.utils.sheet_to_json(wb.Sheets['Rates']).forEach(r=>{ if(r.currency) fxRates[r.currency]=parseFloat(r.rate)||0; }); }
   accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; a.active = !(a.active===false||a.active==='FALSE'||a.active===0||a.active==='0');
-    a.type = (a.type==='credit'||a.type==='cashback') ? a.type : 'normal'; a.creditLimit = (a.creditLimit!==undefined && a.creditLimit!=='') ? (parseFloat(a.creditLimit)||null) : null; });
+    a.type = (a.type==='credit'||a.type==='cashback') ? a.type : 'normal'; a.creditLimit = (a.creditLimit!==undefined && a.creditLimit!=='') ? (parseFloat(a.creditLimit)||null) : null;
+    a.monthlyCashbackLimit = (a.monthlyCashbackLimit!==undefined && a.monthlyCashbackLimit!=='') ? (parseFloat(a.monthlyCashbackLimit)||null) : null; });
   tx.forEach(t=>{ t.amount=parseFloat(t.amount)||0; });
   transfers.forEach(t=>{ t.amount=parseFloat(t.amount)||0; t.toAmount=parseFloat(t.toAmount)||t.amount; t.rate=parseFloat(t.rate)||1; });
   attDays = wb.Sheets['AttendanceDays'] ? XLSX.utils.sheet_to_json(wb.Sheets['AttendanceDays']).map(r=>({id:r.id, date:r.date, dayType:r.dayType, note:r.note||'', sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() })) : [];
@@ -5610,9 +5635,9 @@ document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
 const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans','MasariPlan','MasariProgress','Discounts','Tags','Budgets','Goals'];
 const GS_HEADERS = {
-  Accounts: ['id','name','currency','balance','date','included','icon','active','type','creditLimit'],
+  Accounts: ['id','name','currency','balance','date','included','icon','active','type','creditLimit','monthlyCashbackLimit'],
   Categories: ['id','name','icon','type'],
-  Transactions: ['id','type','accountId','categoryId','amount','currency','date','note','tagsJson'],
+  Transactions: ['id','type','accountId','categoryId','amount','currency','date','note','tagsJson','relatedTxId'],
   Transfers: ['id','accountId','toAccountId','amount','currency','toAmount','toCurrency','rate','date','note'],
   Rates: ['currency','rate'],
   AttendanceDays: ['id','date','dayType','note','sessionsJson'],
@@ -5629,9 +5654,9 @@ const GS_HEADERS = {
 };
 function gsRowsFromState(){
   return {
-    Accounts: [GS_HEADERS.Accounts, ...accounts.map(a=>[a.id,a.name,a.currency,a.balance,a.date,a.included?1:0,a.icon,isActiveAccount(a)?1:0,a.type||'normal',a.creditLimit!=null?a.creditLimit:''])],
+    Accounts: [GS_HEADERS.Accounts, ...accounts.map(a=>[a.id,a.name,a.currency,a.balance,a.date,a.included?1:0,a.icon,isActiveAccount(a)?1:0,a.type||'normal',a.creditLimit!=null?a.creditLimit:'',a.monthlyCashbackLimit!=null?a.monthlyCashbackLimit:''])],
     Categories: [GS_HEADERS.Categories, ...categories.map(c=>[c.id,c.name,c.icon,c.type])],
-    Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||'',JSON.stringify(t.tags||[])])],
+    Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||'',JSON.stringify(t.tags||[]),t.relatedTxId||''])],
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
     Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])],
     AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,d.note||'',JSON.stringify(d.sessions)])],
@@ -5718,7 +5743,8 @@ async function gsPull(silent){
     const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR, mpVR, mgVR, dcVR, tgVR, bdVR, glVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE',
       active: !(a.active==0||a.active===false||a.active==='0'||a.active==='FALSE'), type: (a.type==='credit'||a.type==='cashback') ? a.type : 'normal',
-      creditLimit: (a.creditLimit!==undefined && a.creditLimit!=='') ? parseFloat(a.creditLimit)||null : null}));
+      creditLimit: (a.creditLimit!==undefined && a.creditLimit!=='') ? parseFloat(a.creditLimit)||null : null,
+      monthlyCashbackLimit: (a.monthlyCashbackLimit!==undefined && a.monthlyCashbackLimit!=='') ? parseFloat(a.monthlyCashbackLimit)||null : null}));
     const newCategories = gsObjectsFromRows(catVR.values);
     const newTx = gsObjectsFromRows(txVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, tags: (()=>{ try{ return JSON.parse(t.tagsJson||'[]'); }catch(e){ return []; } })() }));
     newTx.forEach(t=>{ delete t.tagsJson; });
