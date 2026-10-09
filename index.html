@@ -520,6 +520,8 @@ table.rtable{width:100%; border-collapse:collapse;}
 .tx-info{flex:1; min-width:0;}
 .tx-info .tn{font-weight:600; font-size:13.5px;}
 .tx-info .ts{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+.tx-link{color:var(--gold-soft); cursor:pointer; font-weight:600; border-radius:6px; padding:1px 5px; margin-left:2px; background:var(--gold-tint); white-space:nowrap;}
+.tx-link:hover{background:var(--gold-tint2);}
 .tx-amt{font-weight:600; font-size:14px; flex-shrink:0; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
 .tx-amt.income{color:var(--income-soft);}
 .tx-amt.expense{color:var(--expense-soft);}
@@ -1784,6 +1786,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
   <div class="modal">
     <h3><span id="entryTitle">New expense</span><span class="close-x" onclick="closeModal('entryModal')">✕</span></h3>
     <div class="calc-amt-box" id="entryAmtBox"><div class="cur" id="entryCur">AED</div><input type="number" id="entryAmtInput" class="amt-input" inputmode="decimal" step="0.01" min="0" placeholder="0" autocomplete="off"></div>
+    <div class="field" id="entryLinkedInfo" style="display:none;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--gold-tint);">
+        <div style="font-size:12.5px; color:var(--text); line-height:1.5;">🔗 <span id="entryLinkedLabel"></span></div>
+        <button type="button" class="btn small ghost" id="entryLinkedOpenBtn" style="white-space:nowrap;">Open</button>
+      </div>
+    </div>
     <div class="field"><label>Account</label><select id="entryAccountSelect"></select></div>
     <div class="field"><label>Category</label><select id="entryCategorySelect"></select></div>
     <div class="field"><label>Date</label><input type="date" id="entryDate"></div>
@@ -3340,7 +3348,8 @@ function renderGroupedTx(list, groupBy){
       const row=document.createElement('div'); row.className='tx-row';
       const cls=t.type==='income'?'income':'expense';
       const sign=t.type==='income'?'+':'-';
-      row.innerHTML=`<div class="tx-icon">${lbl.icon}</div><div class="tx-info"><div class="tn">${lbl.name}</div><div class="ts">${t.note?t.note+' · ':''}${acc?acc.name:''}</div></div>
+      const link = txLinkInfo(t);
+      row.innerHTML=`<div class="tx-icon">${lbl.icon}</div><div class="tx-info"><div class="tn">${lbl.name}</div><div class="ts">${t.note?t.note+' · ':''}${acc?acc.name:''}${link?` <span class="tx-link" data-linkjump="${link.jumpId}" title="${link.title}">🔗 ${link.label}</span>`:''}</div></div>
         <div class="tx-amt ${cls}">${sign}${fmtMoney(t.amount,t.currency||'')}</div>
         <div class="tx-actions"><span data-edit="${t.id}" title="Edit">✎</span><span data-dup="${t.id}" title="Duplicate">⧉</span><span data-del="${t.id}" title="Delete">✕</span></div>`;
       body.appendChild(row);
@@ -3350,6 +3359,20 @@ function renderGroupedTx(list, groupBy){
   el.querySelectorAll('[data-del]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); tx=tx.filter(x=>x.id!==b.dataset.del); persist(); renderAll(); }); });
   el.querySelectorAll('[data-edit]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); const t=tx.find(x=>x.id===b.dataset.edit); if(t) openEntry(t.type, t); }); });
   el.querySelectorAll('[data-dup]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); const t=tx.find(x=>x.id===b.dataset.dup); if(t) openEntry(t.type, t, true); }); });
+  el.querySelectorAll('[data-linkjump]').forEach(b=>{ b.addEventListener('click', (e)=>{ e.stopPropagation(); const t=tx.find(x=>x.id===b.dataset.linkjump); if(t) openEntry(t.type, t); }); });
+}
+/* visible link between a cashback income row and the expense that generated it, shown both ways */
+function txLinkInfo(t){
+  if(t.type==='income' && t.categoryId===CASHBACK_CATEGORY_ID && t.relatedTxId){
+    const src = tx.find(x=>x.id===t.relatedTxId);
+    if(src){ const c=getCategory(src.categoryId); return { jumpId: src.id, label:`${c?c.icon:'❔'} ${c?c.name:'Expense'}`, title:'From this expense — click to open it' }; }
+  }
+  if(t.type==='expense'){
+    const kids = tx.filter(x=>x.relatedTxId===t.id);
+    if(kids.length===1){ const acc=getAccount(kids[0].accountId); return { jumpId: kids[0].id, label:`Cashback → ${acc?acc.name:'?'}`, title:'This expense earned cashback — click to open it' }; }
+    if(kids.length>1){ return { jumpId: kids[0].id, label:`Cashback → ${kids.length} sources`, title:'This expense earned cashback — click to open the first one' }; }
+  }
+  return null;
 }
 function renderList(){ renderGroupedTx([...filteredTx()], listViewMode); }
 
@@ -3844,6 +3867,19 @@ function openEntry(mode, existingTx, isDuplicate){
   populateTextSuggestions('discountSourceSuggestions', discounts.map(d=>d.source));
   entryTagSelection = new Set(existingTx ? (existingTx.tags||[]) : []);
   renderEntryTagChips();
+  /* show a visible link back to whichever transaction this one is tied to, so the
+     connection between a cashback entry and the expense that generated it is never hidden */
+  const linkedInfoEl = document.getElementById('entryLinkedInfo');
+  let linkedSrc = null;
+  if(mode==='income' && existingTx && existingTx.relatedTxId) linkedSrc = tx.find(x=>x.id===existingTx.relatedTxId);
+  if(linkedSrc){
+    const c = getCategory(linkedSrc.categoryId);
+    document.getElementById('entryLinkedLabel').innerHTML = `Cashback from: <strong>${c?c.icon:'❔'} ${c?c.name:'Expense'}</strong>${linkedSrc.note?' — '+linkedSrc.note:''} · ${fmtMoney(linkedSrc.amount, linkedSrc.currency||'')}`;
+    document.getElementById('entryLinkedOpenBtn').onclick = ()=>{ closeModal('entryModal'); setTimeout(()=>openEntry('expense', linkedSrc), 160); };
+    linkedInfoEl.style.display='block';
+  } else {
+    linkedInfoEl.style.display='none';
+  }
   openModal('entryModal');
   const amtInput = document.getElementById('entryAmtInput');
   setTimeout(()=>{ amtInput.focus(); amtInput.select(); }, 50);
