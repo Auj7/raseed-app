@@ -230,6 +230,8 @@ header{display:flex; align-items:center; justify-content:space-between; gap:16px
   content:''; position:absolute; left:15px; right:15px; bottom:4px; height:2px;
   background:var(--gold); border-radius:2px;
 }
+.tab-dot{position:absolute; top:5px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--expense-soft); border:1.5px solid var(--surface);}
+.fin-sidebar.collapsed .tab-dot{top:3px; right:3px;}
 .toolbar{order:1; display:flex; gap:9px; margin:0; align-items:center; flex-wrap:wrap;}
 .range-nav{order:2; display:none; align-items:center; gap:4px; margin:0 0 0 auto;}
 .range-row{order:3; flex:1 0 100%; display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin:0;}
@@ -894,7 +896,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
       <button data-tab="list" title="Transactions"><span class="ti">🧾</span><span class="tl">Transactions</span></button>
       <button data-tab="transfers" title="Transfers"><span class="ti">⇄</span><span class="tl">Transfers</span></button>
       <button data-tab="cashback" title="Cashback"><span class="ti">💰</span><span class="tl">Cashback</span></button>
-      <button data-tab="recurring" title="Recurring"><span class="ti">🔁</span><span class="tl">Recurring</span></button>
+      <button data-tab="recurring" title="Recurring"><span class="ti">🔁</span><span class="tl">Recurring</span><span class="tab-dot" id="recurringDueDot" style="display:none;"></span></button>
       <button data-tab="insights" title="Insights"><span class="ti">💡</span><span class="tl">Insights</span></button>
       <button data-tab="goals" title="Goals &amp; Budgets"><span class="ti">🎯</span><span class="tl">Goals &amp; Budgets</span></button>
       <div class="fin-sidebar-sep"></div>
@@ -1932,6 +1934,19 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(.2);
   </div>
 </div>
 
+<!-- ===== recurring: confirm-before-posting queue ===== -->
+<div class="modal-overlay" id="recurringDueModal">
+  <div class="modal wide">
+    <h3><span>Recurring payments due</span><span class="close-x" onclick="closeModal('recurringDueModal')">✕</span></h3>
+    <div class="hint" style="margin-bottom:10px;">These are due now. Nothing is posted until you confirm it — skip any you don't want this time.</div>
+    <div id="recurringDueList"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn ghost" id="recurringDueLaterBtn" style="flex:1;">Decide later</button>
+      <button class="btn solid" id="recurringDueConfirmAllBtn" style="flex:1;">Confirm all</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== storage settings modal ===== -->
 <div class="modal-overlay" id="storageModal">
   <div class="modal wide">
@@ -2459,8 +2474,9 @@ function enterFinance(){
   document.getElementById('hubScreen').style.display='none';
   ALL_APP_IDS.forEach(id=>document.getElementById(id).style.display=(id==='financeApp')?'flex':'none');
   syncFinTopbar();
-  if(processRecurringDue()) showToast('Recurring payments up to date');
+  processRecurringDue();
   renderAll();
+  if(dueRecurringQueue.length) openRecurringDueModal();
 }
 function syncFinTopbar(){
   // mirror the suite-wide storage status/theme icon into Raseed's own top bar, which owns its own chrome
@@ -4193,51 +4209,142 @@ function recurringOccurrenceDate(rule, n){
   }
   return d;
 }
+/* Whether a given occurrence of a rule has already been dealt with — either posted (a tx/transfer
+   tagged with this rule's id sits on that exact date) or explicitly skipped. This is derived live
+   from the shared, synced data (tx/transfers/skippedDates) rather than a per-device counter, so two
+   devices sharing the same Google Sheet/Excel file always agree on what's already been handled —
+   that's what used to cause the same recurring payment to be posted twice. */
+function occurrenceResolved(rule, occKey){
+  if((rule.skippedDates||[]).includes(occKey)) return true;
+  if(rule.type==='transfer') return transfers.some(t=>t.recurringId===rule.id && t.date===occKey);
+  return tx.some(t=>t.recurringId===rule.id && t.date===occKey);
+}
+function firstUnresolvedOccIndex(rule){
+  let n=0;
+  while(n<3000){
+    if(!occurrenceResolved(rule, fmtDate(recurringOccurrenceDate(rule, n)))) return n;
+    n++;
+  }
+  return n;
+}
 function recurringRuleFinished(rule){
-  return rule.endMode==='count' && rule.maxOccurrences!=null && rule.generatedCount>=rule.maxOccurrences;
+  const n = firstUnresolvedOccIndex(rule);
+  if(rule.endMode==='count' && rule.maxOccurrences!=null && n>=rule.maxOccurrences) return true;
+  if(rule.endMode==='date' && rule.endDate && fmtDate(recurringOccurrenceDate(rule,n))>rule.endDate) return true;
+  return false;
 }
 function recurringNextDueDate(rule){
   if(recurringRuleFinished(rule)) return null;
-  const occ = recurringOccurrenceDate(rule, rule.generatedCount);
-  const occKey = fmtDate(occ);
+  const occKey = fmtDate(recurringOccurrenceDate(rule, firstUnresolvedOccIndex(rule)));
   if(rule.endMode==='date' && rule.endDate && occKey>rule.endDate) return null;
   return occKey;
 }
-/* Materializes only the occurrences whose date has actually arrived (<= today) — never
-   creates future-dated entries in advance, and picks up any that became due while the
-   app was closed, one at a time, in order. */
-function processRecurringDue(){
+/* Every occurrence whose date has arrived (<= today) but hasn't been confirmed or skipped yet —
+   never posts anything on its own. Picks up anything that became due while the app was closed,
+   in order, and stops cleanly at the rule's end condition. */
+function dueOccurrencesForRule(rule){
   const today = todayKey();
-  let changed=false;
-  recurring.forEach(rule=>{
-    if(!rule.active) return;
-    let guard=0;
-    while(guard++<3000){
-      if(recurringRuleFinished(rule)) break;
-      const n = rule.generatedCount;
-      const occKey = fmtDate(recurringOccurrenceDate(rule, n));
-      if(occKey>today) break;
-      if(rule.endMode==='date' && rule.endDate && occKey>rule.endDate) break;
-      const tag = rule.id+'_'+n+'_'+Date.now();
-      if(rule.type==='transfer'){
-        const fromAcc=getAccount(rule.accountId), toAcc=getAccount(rule.toAccountId);
-        if(!fromAcc || !toAcc) break;
-        const rate = fromAcc.currency!==toAcc.currency ? (parseFloat(rule.rate)||1) : 1;
-        transfers.push({ id:'x'+tag, accountId:rule.accountId, toAccountId:rule.toAccountId, amount:rule.amount, currency:fromAcc.currency,
-          toAmount:rule.amount*rate, toCurrency:toAcc.currency, rate, date:occKey, note:rule.note||'', recurringId:rule.id });
-      } else {
-        const acc=getAccount(rule.accountId);
-        if(!acc) break;
-        tx.push({ id:'t'+tag, type:rule.type, accountId:rule.accountId, categoryId:rule.categoryId, amount:rule.amount, currency:acc.currency,
-          date:occKey, note:rule.note||'', recurringId:rule.id });
-      }
-      rule.generatedCount++;
-      changed=true;
-    }
-  });
-  if(changed) saveLocal();
-  return changed;
+  const out = [];
+  let n = firstUnresolvedOccIndex(rule);
+  while(out.length<300){
+    if(rule.endMode==='count' && rule.maxOccurrences!=null && n>=rule.maxOccurrences) break;
+    const occKey = fmtDate(recurringOccurrenceDate(rule, n));
+    if(occKey>today) break;
+    if(rule.endMode==='date' && rule.endDate && occKey>rule.endDate) break;
+    out.push({ ruleId: rule.id, occKey });
+    n++;
+  }
+  return out;
 }
+let dueRecurringQueue = [];
+function computeDueRecurringQueue(){
+  const out = [];
+  recurring.forEach(rule=>{ if(rule.active) out.push(...dueOccurrencesForRule(rule)); });
+  out.sort((a,b)=>a.occKey.localeCompare(b.occKey));
+  return out;
+}
+/* Refreshes the due queue (never posts by itself) and keeps the sidebar badge in sync.
+   Returns true when something is waiting on the person's confirmation. */
+function processRecurringDue(){
+  dueRecurringQueue = computeDueRecurringQueue();
+  const dot = document.getElementById('recurringDueDot');
+  if(dot) dot.style.display = dueRecurringQueue.length ? 'block' : 'none';
+  return dueRecurringQueue.length>0;
+}
+function confirmRecurringOccurrence(ruleId, occKey){
+  const rule = getRecurring(ruleId);
+  if(!rule || occurrenceResolved(rule, occKey)) return; // already handled elsewhere (e.g. synced from another device)
+  if(rule.type==='transfer'){
+    const fromAcc=getAccount(rule.accountId), toAcc=getAccount(rule.toAccountId);
+    if(!fromAcc || !toAcc){ showToast('One of this rule\'s accounts no longer exists'); return; }
+    const rate = fromAcc.currency!==toAcc.currency ? (parseFloat(rule.rate)||1) : 1;
+    transfers.push({ id:'x'+rule.id+'_'+occKey, accountId:rule.accountId, toAccountId:rule.toAccountId, amount:rule.amount, currency:fromAcc.currency,
+      toAmount:rule.amount*rate, toCurrency:toAcc.currency, rate, date:occKey, note:rule.note||'', recurringId:rule.id });
+  } else {
+    const acc=getAccount(rule.accountId);
+    if(!acc){ showToast('This rule\'s account no longer exists'); return; }
+    tx.push({ id:'t'+rule.id+'_'+occKey, type:rule.type, accountId:rule.accountId, categoryId:rule.categoryId, amount:rule.amount, currency:acc.currency,
+      date:occKey, note:rule.note||'', recurringId:rule.id });
+  }
+  rule.generatedCount = (rule.generatedCount||0)+1;
+  persist();
+}
+function skipRecurringOccurrence(ruleId, occKey){
+  const rule = getRecurring(ruleId);
+  if(!rule || occurrenceResolved(rule, occKey)) return;
+  rule.skippedDates = rule.skippedDates || [];
+  rule.skippedDates.push(occKey);
+  rule.generatedCount = (rule.generatedCount||0)+1;
+  persist();
+}
+
+/* ---- recurring due: confirm-before-posting queue UI ---- */
+function renderRecurringDueModal(){
+  const host = document.getElementById('recurringDueList');
+  processRecurringDue();
+  if(!dueRecurringQueue.length){ closeModal('recurringDueModal'); return; }
+  host.innerHTML = dueRecurringQueue.map(item=>{
+    const rule = getRecurring(item.ruleId); if(!rule) return '';
+    let iconHtml, titleHtml, amtCls, sign;
+    if(rule.type==='transfer'){
+      const from=getAccount(rule.accountId), to=getAccount(rule.toAccountId);
+      iconHtml='⇄'; titleHtml=`${from?from.name:'—'} → ${to?to.name:'—'}`; amtCls='transfer'; sign='';
+    } else {
+      const c=getCategory(rule.categoryId);
+      iconHtml = c?c.icon:'❔'; titleHtml = c?c.name:'Uncategorized';
+      amtCls = rule.type==='income'?'income':'expense'; sign = rule.type==='income'?'+':'-';
+    }
+    const acc = getAccount(rule.accountId);
+    const key = item.ruleId+'|'+item.occKey;
+    return `<div class="card" style="margin-bottom:10px;">
+      <div class="tx-row" style="cursor:default;">
+        <div class="tx-icon">${iconHtml}</div>
+        <div class="tx-info"><div class="tn">${titleHtml}</div><div class="ts">Due ${item.occKey}${rule.note?' · '+rule.note:''} · ${acc?acc.name:''}</div></div>
+        <div class="tx-amt ${amtCls}">${sign}${fmtMoney(rule.amount, acc?acc.currency:'')}</div>
+      </div>
+      <div class="btn-row" style="padding:0 14px 12px; margin:0;">
+        <button type="button" class="btn small ghost" data-skipdue="${key}" style="flex:1;">Skip this time</button>
+        <button type="button" class="btn small solid" data-confirmdue="${key}" style="flex:1;">Confirm</button>
+      </div>
+    </div>`;
+  }).join('');
+  host.querySelectorAll('[data-confirmdue]').forEach(b=>b.addEventListener('click', ()=>{
+    const [ruleId, occKey] = b.dataset.confirmdue.split('|');
+    confirmRecurringOccurrence(ruleId, occKey);
+    renderRecurringDueModal(); renderAll(); showToast('Posted');
+  }));
+  host.querySelectorAll('[data-skipdue]').forEach(b=>b.addEventListener('click', ()=>{
+    const [ruleId, occKey] = b.dataset.skipdue.split('|');
+    skipRecurringOccurrence(ruleId, occKey);
+    renderRecurringDueModal(); renderAll(); showToast('Skipped');
+  }));
+}
+function openRecurringDueModal(){ renderRecurringDueModal(); if(dueRecurringQueue.length) openModal('recurringDueModal'); }
+document.getElementById('recurringDueLaterBtn').addEventListener('click', ()=>closeModal('recurringDueModal'));
+document.getElementById('recurringDueConfirmAllBtn').addEventListener('click', ()=>{
+  [...dueRecurringQueue].forEach(item=>confirmRecurringOccurrence(item.ruleId, item.occKey));
+  renderRecurringDueModal(); renderAll(); showToast('All confirmed');
+});
 
 /* ---- recurring editor modal ---- */
 let editingRecurringId=null, recType='expense', recEndMode='never';
@@ -4343,15 +4450,11 @@ document.getElementById('recSaveBtn').addEventListener('click', ()=>{
   };
   if(editingRecurringId){
     const existing=getRecurring(editingRecurringId);
-    // changing the start date/frequency resets progress so the new schedule is honoured from scratch
-    if(existing.startDate!==payload.startDate || existing.frequency!==payload.frequency || existing.interval!==payload.interval) payload.generatedCount=0;
-    else payload.generatedCount = existing.generatedCount;
     Object.assign(existing, payload);
   } else {
-    recurring.push({ id:'r'+Date.now(), generatedCount:0, ...payload });
+    recurring.push({ id:'r'+Date.now(), generatedCount:0, skippedDates:[], ...payload });
   }
-  processRecurringDue();
-  persist(); closeModal('recurringModal'); renderAll(); showToast(editingRecurringId?'Recurring rule updated':'Recurring rule saved');
+  persist(); processRecurringDue(); closeModal('recurringModal'); renderAll(); showToast(editingRecurringId?'Recurring rule updated':'Recurring rule saved');
 });
 document.getElementById('recDeleteBtn').addEventListener('click', ()=>{
   if(!editingRecurringId) return;
@@ -4363,13 +4466,21 @@ function recurringSubtitle(r){
   const iv=r.interval||1;
   let s = `Every ${iv>1?iv+' ':''}${RECURRING_FREQ_LABEL[r.frequency]}${iv>1?'s':''} · started ${r.startDate}`;
   if(r.endMode==='date' && r.endDate) s += ` · ends ${r.endDate}`;
-  else if(r.endMode==='count') s += ` · ${r.generatedCount}/${r.maxOccurrences} done`;
+  else if(r.endMode==='count') s += ` · ${firstUnresolvedOccIndex(r)}/${r.maxOccurrences} done`;
   return s;
 }
 function renderRecurringList(){
   const el = document.getElementById('recurringView');
-  if(!recurring.length){ el.innerHTML='<div class="panel"><div class="empty-hint">No recurring expenses, income, or transfers yet</div></div>'; return; }
+  processRecurringDue();
   el.innerHTML='';
+  if(dueRecurringQueue.length){
+    const banner=document.createElement('div');
+    banner.className='panel'; banner.style.cssText='display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; border-color:var(--gold-tint2); background:var(--gold-tint);';
+    banner.innerHTML = `<div style="font-size:13px;">🔔 ${dueRecurringQueue.length} recurring payment${dueRecurringQueue.length>1?'s are':' is'} due and waiting for your confirmation</div><button class="btn small solid" id="recurringReviewDueBtn">Review</button>`;
+    el.appendChild(banner);
+    banner.querySelector('#recurringReviewDueBtn').addEventListener('click', openRecurringDueModal);
+  }
+  if(!recurring.length){ el.insertAdjacentHTML('beforeend', '<div class="panel"><div class="empty-hint">No recurring expenses, income, or transfers yet</div></div>'); return; }
   recurring.slice().sort((a,b)=>(a.active===b.active?0:(a.active?-1:1))).forEach(r=>{
     const card=document.createElement('div'); card.className='card';
     const next = recurringNextDueDate(r);
@@ -4399,7 +4510,7 @@ function renderRecurringList(){
   el.querySelectorAll('[data-rdup]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation();
     const r=getRecurring(b.dataset.rdup); if(!r) return;
     const copy={...r, id:undefined}; delete copy.id;
-    recurring.push({ ...copy, id:'r'+Date.now(), generatedCount:0 });
+    recurring.push({ ...copy, id:'r'+Date.now(), generatedCount:0, skippedDates:[] });
     persist(); renderAll(); showToast('Duplicated — edit and save the new rule');
   }));
   el.querySelectorAll('[data-rdel]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation();
@@ -5489,6 +5600,11 @@ function workbookFromState(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(transfers), 'Transfers');
   const ratesRows = Object.entries(fxRates).map(([currency,rate])=>({currency,rate}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ratesRows), 'Rates');
+  const recurringRows = recurring.map(r=>({id:r.id, type:r.type, accountId:r.accountId||'', toAccountId:r.toAccountId||'', categoryId:r.categoryId||'',
+    amount:r.amount, rate:r.rate||1, note:r.note||'', startDate:r.startDate, interval:r.interval||1, frequency:r.frequency, endMode:r.endMode,
+    endDate:r.endDate||'', maxOccurrences:r.maxOccurrences!=null?r.maxOccurrences:'', active:r.active?1:0, generatedCount:r.generatedCount||0,
+    skippedDatesJson:JSON.stringify(r.skippedDates||[])}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(recurringRows), 'Recurring');
   const attRows = attDays.map(d=>({id:d.id, date:d.date, dayType:d.dayType, note:d.note||'', sessionsJson:JSON.stringify(d.sessions)}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attRows), 'AttendanceDays');
   const settingsRows = Object.entries(attSettings).map(([key,value])=>({key, value: (key==='ramadanPeriods'||key==='assignedByList') ? JSON.stringify(value) : value}));
@@ -5523,6 +5639,14 @@ function stateFromWorkbook(wb){
   transfers = wb.Sheets['Transfers'] ? XLSX.utils.sheet_to_json(wb.Sheets['Transfers']) : [];
   fxRates = {};
   if(wb.Sheets['Rates']){ XLSX.utils.sheet_to_json(wb.Sheets['Rates']).forEach(r=>{ if(r.currency) fxRates[r.currency]=parseFloat(r.rate)||0; }); }
+  recurring = wb.Sheets['Recurring'] ? XLSX.utils.sheet_to_json(wb.Sheets['Recurring']).map(r=>({
+    id:r.id, type:r.type, accountId:r.accountId||'', toAccountId:r.toAccountId||null, categoryId:r.categoryId||null,
+    amount:parseFloat(r.amount)||0, rate:parseFloat(r.rate)||1, note:r.note||'', startDate:r.startDate, interval:parseInt(r.interval)||1,
+    frequency:r.frequency, endMode:r.endMode||'never', endDate:r.endDate||null,
+    maxOccurrences:(r.maxOccurrences!==undefined && r.maxOccurrences!=='') ? (parseInt(r.maxOccurrences)||null) : null,
+    active: !(r.active===false||r.active==='FALSE'||r.active===0||r.active==='0'), generatedCount:parseInt(r.generatedCount)||0,
+    skippedDates: (()=>{ try{ return JSON.parse(r.skippedDatesJson||'[]'); }catch(e){ return []; } })()
+  })) : [];
   accounts.forEach(a=>{ a.balance=parseFloat(a.balance)||0; a.included = a.included===true||a.included==='TRUE'||a.included===1; a.active = !(a.active===false||a.active==='FALSE'||a.active===0||a.active==='0');
     a.type = (a.type==='credit'||a.type==='cashback') ? a.type : 'normal'; a.creditLimit = (a.creditLimit!==undefined && a.creditLimit!=='') ? (parseFloat(a.creditLimit)||null) : null;
     a.monthlyCashbackLimit = (a.monthlyCashbackLimit!==undefined && a.monthlyCashbackLimit!=='') ? (parseFloat(a.monthlyCashbackLimit)||null) : null; });
@@ -5669,13 +5793,14 @@ let gsSpreadsheetId = localStorage.getItem(GS_LS.sheetId) || GS_SPREADSHEET_ID_D
 document.getElementById('gsClientId').value = gsClientId;
 document.getElementById('gsSpreadsheetId').value = gsSpreadsheetId;
 
-const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans','MasariPlan','MasariProgress','Discounts','Tags','Budgets','Goals'];
+const SHEETS_TABS = ['Accounts','Categories','Transactions','Transfers','Rates','Recurring','AttendanceDays','AttendanceSettings','KafalatSponsors','KafalatPayments','DebtPlans','MasariPlan','MasariProgress','Discounts','Tags','Budgets','Goals'];
 const GS_HEADERS = {
   Accounts: ['id','name','currency','balance','date','included','icon','active','type','creditLimit','monthlyCashbackLimit'],
   Categories: ['id','name','icon','type'],
   Transactions: ['id','type','accountId','categoryId','amount','currency','date','note','tagsJson','relatedTxId'],
   Transfers: ['id','accountId','toAccountId','amount','currency','toAmount','toCurrency','rate','date','note'],
   Rates: ['currency','rate'],
+  Recurring: ['id','type','accountId','toAccountId','categoryId','amount','rate','note','startDate','interval','frequency','endMode','endDate','maxOccurrences','active','generatedCount','skippedDatesJson'],
   AttendanceDays: ['id','date','dayType','note','sessionsJson'],
   AttendanceSettings: ['key','value'],
   KafalatSponsors: ['id','name'],
@@ -5695,6 +5820,7 @@ function gsRowsFromState(){
     Transactions: [GS_HEADERS.Transactions, ...tx.map(t=>[t.id,t.type,t.accountId||'',t.categoryId||'',t.amount,t.currency,t.date,t.note||'',JSON.stringify(t.tags||[]),t.relatedTxId||''])],
     Transfers: [GS_HEADERS.Transfers, ...transfers.map(t=>[t.id,t.accountId,t.toAccountId,t.amount,t.currency,t.toAmount,t.toCurrency,t.rate,t.date,t.note||''])],
     Rates: [GS_HEADERS.Rates, ...Object.entries(fxRates).map(([c,r])=>[c,r])],
+    Recurring: [GS_HEADERS.Recurring, ...recurring.map(r=>[r.id,r.type,r.accountId||'',r.toAccountId||'',r.categoryId||'',r.amount,r.rate||1,r.note||'',r.startDate,r.interval||1,r.frequency,r.endMode,r.endDate||'',r.maxOccurrences!=null?r.maxOccurrences:'',r.active?1:0,r.generatedCount||0,JSON.stringify(r.skippedDates||[])])],
     AttendanceDays: [GS_HEADERS.AttendanceDays, ...attDays.map(d=>[d.id,d.date,d.dayType,d.note||'',JSON.stringify(d.sessions)])],
     AttendanceSettings: [GS_HEADERS.AttendanceSettings, ...Object.entries(attSettings).map(([k,v])=>[k, (k==='ramadanPeriods'||k==='assignedByList') ? JSON.stringify(v) : v])],
     KafalatSponsors: [GS_HEADERS.KafalatSponsors, ...kfSponsors.map(s=>[s.id,s.name])],
@@ -5766,7 +5892,7 @@ async function gsPush(){
       method:'POST', headers:{Authorization:'Bearer '+gsAccessToken, 'Content-Type':'application/json'},
       body: JSON.stringify({ valueInputOption:'RAW', data: SHEETS_TABS.map(t=>({range:t+'!A1', values: rows[t]})) })
     });
-    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, attDays, attSettings, kfSponsors, kfPayments, debtPlans, masariPlan, masariProgress, discounts});
+    gsLastSnapshot = JSON.stringify({accounts, categories, tx, transfers, fxRates, recurring, attDays, attSettings, kfSponsors, kfPayments, debtPlans, masariPlan, masariProgress, discounts, tags, budgets, goals});
   }catch(err){ console.error(err); showToast('Could not sync with Google Sheets — data kept locally'); }
 }
 async function gsPull(silent){
@@ -5776,7 +5902,7 @@ async function gsPull(silent){
     const res = await fetch(url, { headers:{Authorization:'Bearer '+gsAccessToken} });
     if(!res.ok){ if(res.status===401) gsUpdateStatus(false); return; }
     const data = await res.json();
-    const [accVR, catVR, txVR, trVR, rtVR, adVR, asVR, ksVR, kpVR, dpVR, mpVR, mgVR, dcVR, tgVR, bdVR, glVR] = data.valueRanges;
+    const [accVR, catVR, txVR, trVR, rtVR, rcVR, adVR, asVR, ksVR, kpVR, dpVR, mpVR, mgVR, dcVR, tgVR, bdVR, glVR] = data.valueRanges;
     const newAccounts = gsObjectsFromRows(accVR.values).map(a=>({...a, balance:parseFloat(a.balance)||0, included: a.included==1||a.included===true||a.included==='1'||a.included==='TRUE',
       active: !(a.active==0||a.active===false||a.active==='0'||a.active==='FALSE'), type: (a.type==='credit'||a.type==='cashback') ? a.type : 'normal',
       creditLimit: (a.creditLimit!==undefined && a.creditLimit!=='') ? parseFloat(a.creditLimit)||null : null,
@@ -5786,6 +5912,14 @@ async function gsPull(silent){
     newTx.forEach(t=>{ delete t.tagsJson; });
     const newTransfers = gsObjectsFromRows(trVR.values).map(t=>({...t, amount:parseFloat(t.amount)||0, toAmount:parseFloat(t.toAmount)||0, rate:parseFloat(t.rate)||1}));
     const newRates = {}; gsObjectsFromRows(rtVR.values).forEach(r=>{ if(r.currency) newRates[r.currency]=parseFloat(r.rate)||0; });
+    const newRecurring = gsObjectsFromRows(rcVR.values).map(r=>({
+      id:r.id, type:r.type, accountId:r.accountId||'', toAccountId:r.toAccountId||null, categoryId:r.categoryId||null,
+      amount:parseFloat(r.amount)||0, rate:parseFloat(r.rate)||1, note:r.note||'', startDate:r.startDate,
+      interval:parseInt(r.interval)||1, frequency:r.frequency, endMode:r.endMode||'never', endDate:r.endDate||null,
+      maxOccurrences:(r.maxOccurrences!==undefined && r.maxOccurrences!=='') ? parseInt(r.maxOccurrences)||null : null,
+      active: !(r.active==0||r.active===false||r.active==='0'||r.active==='FALSE'), generatedCount:parseInt(r.generatedCount)||0,
+      skippedDates: (()=>{ try{ return JSON.parse(r.skippedDatesJson||'[]'); }catch(e){ return []; } })()
+    }));
     const newAttDays = gsObjectsFromRows(adVR.values).map(r=>({ id:r.id, date:r.date, dayType:r.dayType, note:r.note||'', sessions: (()=>{ try{ return JSON.parse(r.sessionsJson||'[]'); }catch(e){ return []; } })() }));
     let newAttSettings = { monThu:8, fri:3, ramadan:5.5, startDate:'', ramadanPeriods:[], assignedByList:[] };
     const asRows = gsObjectsFromRows(asVR.values); if(asRows.length){ const s={}; asRows.forEach(r=>{ s[r.key]=r.value; }); newAttSettings = { monThu:parseFloat(s.monThu)||8, fri:parseFloat(s.fri)||3, ramadan:parseFloat(s.ramadan)||5.5, startDate:s.startDate||'',
@@ -5811,13 +5945,14 @@ async function gsPull(silent){
     const newTags = gsObjectsFromRows(tgVR.values).map(r=>({id:r.id, name:r.name}));
     const newBudgets = gsObjectsFromRows(bdVR.values).map(r=>({id:r.id, categoryId:r.categoryId, monthlyLimit:parseFloat(r.monthlyLimit)||0}));
     const newGoals = gsObjectsFromRows(glVR.values).map(r=>({ id:r.id, name:r.name, target:parseFloat(r.target)||0, targetDate:r.targetDate||'', currentAmount:parseFloat(r.currentAmount)||0, note:r.note||'', date:r.date||todayKey() }));
-    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments, debtPlans:newDebtPlans, masariPlan:newMasariPlan, masariProgress:newMasariProgress, discounts:newDiscounts, tags:newTags, budgets:newBudgets, goals:newGoals});
+    const incomingSnapshot = JSON.stringify({accounts:newAccounts, categories:newCategories, tx:newTx, transfers:newTransfers, fxRates:newRates, recurring:newRecurring, attDays:newAttDays, attSettings:newAttSettings, kfSponsors:newKfSponsors, kfPayments:newKfPayments, debtPlans:newDebtPlans, masariPlan:newMasariPlan, masariProgress:newMasariProgress, discounts:newDiscounts, tags:newTags, budgets:newBudgets, goals:newGoals});
     if(incomingSnapshot === gsLastSnapshot) return;
     if(!newAccounts.length && !newCategories.length && !newTx.length && (accounts.length||categories.length||tx.length)){ await gsPush(); return; }
-    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments; debtPlans=newDebtPlans; masariPlan=newMasariPlan; masariProgress=newMasariProgress; discounts=newDiscounts; tags=newTags; budgets=newBudgets; goals=newGoals;
+    accounts=newAccounts; categories=newCategories; tx=newTx; transfers=newTransfers; fxRates=newRates; recurring=newRecurring; attDays=newAttDays; attSettings=newAttSettings; kfSponsors=newKfSponsors; kfPayments=newKfPayments; debtPlans=newDebtPlans; masariPlan=newMasariPlan; masariProgress=newMasariProgress; discounts=newDiscounts; tags=newTags; budgets=newBudgets; goals=newGoals;
     gsLastSnapshot = incomingSnapshot;
     saveLocal();
     if(!silent) showToast('Pulled latest version from the sheet');
+    processRecurringDue();
     renderAcctFilterSelect(); renderAll();
     if(appView==='attendance') renderAttAll();
     if(appView==='kafalat') renderKfAll();
